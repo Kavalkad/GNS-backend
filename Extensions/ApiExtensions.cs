@@ -7,7 +7,7 @@ namespace GNS.Extensions
 {
     public static class ApiExtensions
     {
-    
+
         public static void AddApiAuthentication(
                 this IServiceCollection services,
                 IConfiguration configuration)
@@ -32,11 +32,13 @@ namespace GNS.Extensions
                         OnMessageReceived = context =>
                         {
                             context.Token = context.Request.Cookies["mouse"];
+
+
                             return Task.CompletedTask;
                         }
 
                     };
-                
+
                 }
             );
         }

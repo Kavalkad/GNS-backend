@@ -9,6 +9,9 @@ namespace GNS.Data.Entities
         public string UserName { get; set; } = string.Empty;
         public Role Role { get; set; }
 
-        public ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>();
+        public ICollection<OrderEntity> Orders { get; set; } = [];
+
+        public Guid BloomBytesId { get; set; }
+        public BloomBytesEntity BlomBytes { get; set; } = null!;
     }
 }

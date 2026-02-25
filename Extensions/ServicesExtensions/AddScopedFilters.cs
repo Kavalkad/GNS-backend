@@ -1,5 +1,3 @@
-
-
 using GNS.Endpoints.Filters;
 using GNS.Services.Implementations;
 using GNS.Services.Interfaces;
@@ -21,6 +19,7 @@ namespace GNS.Extensions
             services.AddScoped<OrderStatusFilter>();
             services.AddScoped<FinalValidationFilter>();
             services.AddScoped<UpdateWorkingHoursFilter>();
+            services.AddScoped<BloomFilter>();
 
             return services;
         }

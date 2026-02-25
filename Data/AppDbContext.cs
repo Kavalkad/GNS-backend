@@ -1,5 +1,5 @@
 using GNS.Data.Configurations;
-using GNS.Data.Entities; 
+using GNS.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -10,8 +10,8 @@ namespace GNS.Data
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {
-           //Database.EnsureDeleted();
-            Database.EnsureCreated();  
+            Database.EnsureDeleted();
+            //Database.EnsureCreated();  
         }
 
         public DbSet<CyberClubEntity> CyberClubs { get; set; }
@@ -23,7 +23,8 @@ namespace GNS.Data
         public DbSet<OrderEntity> Orders { get; set; }
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<OwnerEntity> Owners { get; set; }
-        
+        public DbSet<BloomBytesEntity> BloomBytes { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

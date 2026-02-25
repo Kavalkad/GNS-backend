@@ -32,7 +32,9 @@ namespace GNS.Endpoints
             owner.MapDelete("delete-cyberclub-by-id", DeleteClubById);
             owner.MapDelete("delete-cyberclub-by-name", DeleteClubByName);
 
-            owner.MapPost("register-employee", RegisterEmployee);
+            owner.MapPost("register-employee", RegisterEmployee)
+                .AddEndpointFilter<BloomFilter>()
+                .AddEndpointFilter<FinalValidationFilter>();
             owner.MapGet("get-employees-by-cc-id", GetCyberClubEmployeesByCCId);
             owner.MapGet("get-all-employees", GetAllEmployees);
             owner.MapGet("get-employees-with-bonus", GetEmployeesWithBonus);

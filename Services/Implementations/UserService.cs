@@ -13,11 +13,13 @@ namespace GNS.Services.Implementations
         private readonly IHttpContextAccessor _contextAccessor;
 
 
+
         public UserService(
             IUsersRepository usersRepository,
             IHasher hasher,
             IJwtProvider jwtProvider,
             IHttpContextAccessor contextAccessor
+
         )
         {
             _usersRepository = usersRepository;
@@ -30,12 +32,11 @@ namespace GNS.Services.Implementations
         {
             var hashedPassword = _hasher.Generate(request.Password);
 
-
             await _usersRepository.AddAsync(
                 request.Email,
                 hashedPassword,
                 request.UserName
-                );
+            );
         }
 
         public async Task<string> Login(LoginUserRequest request)

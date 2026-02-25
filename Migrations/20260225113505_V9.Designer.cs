@@ -3,6 +3,7 @@ using System;
 using GNS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260225113505_V9")]
+    partial class V9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.1");
@@ -24,6 +27,10 @@ namespace backend.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<byte[]>("EmailBytes")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<byte[]>("PasswordBytes")
                         .IsRequired()
                         .HasColumnType("BLOB");
 
@@ -166,9 +173,6 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("BloomBytesId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -186,8 +190,6 @@ namespace backend.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BloomBytesId");
 
                     b.ToTable("Users", (string)null);
 
@@ -323,17 +325,6 @@ namespace backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("GNS.Data.Entities.UserEntity", b =>
-                {
-                    b.HasOne("GNS.Data.Entities.BloomBytesEntity", "BlomBytes")
-                        .WithMany("Users")
-                        .HasForeignKey("BloomBytesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BlomBytes");
-                });
-
             modelBuilder.Entity("GNS.Data.Entities.WorkingHoursEntity", b =>
                 {
                     b.HasOne("GNS.Data.Entities.CyberClubEntity", "CyberClub")
@@ -369,11 +360,6 @@ namespace backend.Migrations
                         .HasForeignKey("GNS.Data.Entities.OwnerEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("GNS.Data.Entities.BloomBytesEntity", b =>
-                {
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("GNS.Data.Entities.CyberClubEntity", b =>

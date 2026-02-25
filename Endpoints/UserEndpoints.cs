@@ -1,4 +1,5 @@
 using GNS.Contracts.Requests;
+using GNS.Endpoints.Filters;
 using GNS.Services;
 using GNS.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,9 @@ namespace GNS.Endpoints
         {
             app.MapPost("login", Login);
 
-            app.MapPost("user-register", Register);
+            app.MapPost("user-register", Register)
+                .AddEndpointFilter<BloomFilter>()
+                .AddEndpointFilter<FinalValidationFilter>();
 
             var user = app.MapGroup("user")
                 .RequireAuthorization(policy =>

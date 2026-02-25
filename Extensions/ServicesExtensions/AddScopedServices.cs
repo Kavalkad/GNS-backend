@@ -23,7 +23,8 @@ namespace GNS.Extensions
             services.AddScoped<IOwnerService, OwnerService>();
             services.AddScoped<ITimeSlotsService, TimeSlotsService>();
             services.AddScoped<IGameGamingPlaceService, GameGamingPlaceService>();
-
+            services.AddScoped<IBloomFilterService, BloomFilterService>();
+            
             return services;
         }
     }
