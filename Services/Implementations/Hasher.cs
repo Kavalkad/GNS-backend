@@ -10,5 +10,7 @@ namespace GNS.Services.Implementations
         public bool Verify(string password, string hashedPassword) =>
             BCrypt.Net.BCrypt.EnhancedVerify(password, hashedPassword);
 
+
+
     }
 }

@@ -2,6 +2,7 @@ using GNS.Enums;
 using Microsoft.EntityFrameworkCore;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Data.Entities;
+using System.Runtime.CompilerServices;
 
 namespace GNS.Data.Repositories.Implementations
 {
@@ -23,21 +24,16 @@ namespace GNS.Data.Repositories.Implementations
 
         }
 
-        public async Task CreateOwner(
-            string email,
-            string hashedPassword,
-            string userName,
-            string hashedSercretWord)
+        public async Task AddOwner(OwnerEntity ownerEntity)
         {
-            await _dbcontext.Owners.AddAsync(new OwnerEntity
-            {
-                Email = email,
-                HashedPassword = hashedPassword,
-                UserName = userName,
-                HashedSecretWord = hashedSercretWord,
-                Role = Role.Owner
-            });
-            await _dbcontext.SaveChangesAsync();
+            await _dbcontext.Owners.AddAsync(ownerEntity);
+        }
+        public async Task<OwnerEntity> GetByEmail(string email)
+        {
+            return await _dbcontext.Owners
+                .AsNoTracking()
+                .SingleOrDefaultAsync(o => o.Email == email)
+                    ?? throw new Exception($"Owner with email {email} not found");
         }
     }
 }

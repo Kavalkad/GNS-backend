@@ -10,8 +10,8 @@ namespace GNS.Data
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {
-            Database.EnsureDeleted();
-            //Database.EnsureCreated();  
+           // Database.EnsureDeleted();
+            Database.EnsureCreated();  
         }
 
         public DbSet<CyberClubEntity> CyberClubs { get; set; }
@@ -24,6 +24,7 @@ namespace GNS.Data
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<OwnerEntity> Owners { get; set; }
         public DbSet<BloomBytesEntity> BloomBytes { get; set; }
+        public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

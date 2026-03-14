@@ -12,7 +12,7 @@ namespace GNS.Data.Configurations
 
             builder
                 .HasMany(bb => bb.Users)
-                .WithOne(u => u.BlomBytes)
+                .WithOne(u => u.BloomBytes)
                 .HasForeignKey(u => u.BloomBytesId);
 
         }

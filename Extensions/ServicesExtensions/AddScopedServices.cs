@@ -1,5 +1,6 @@
 
 
+using GNS.Services;
 using GNS.Services.Implementations;
 using GNS.Services.Interfaces;
 
@@ -11,7 +12,8 @@ namespace GNS.Extensions
         {
             services.AddHttpContextAccessor();
 
-            services.AddScoped<IJwtProvider, JwtProvider>();
+            services.AddScoped<ITokenService, TokensService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IHasher, Hasher>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
@@ -23,7 +25,8 @@ namespace GNS.Extensions
             services.AddScoped<IOwnerService, OwnerService>();
             services.AddScoped<ITimeSlotsService, TimeSlotsService>();
             services.AddScoped<IGameGamingPlaceService, GameGamingPlaceService>();
-            services.AddScoped<IBloomFilterService, BloomFilterService>();
+            services.AddScoped<IBloomBytesService, BloomBytesService>();
+            services.AddScoped<UnitOfWork>();
             
             return services;
         }

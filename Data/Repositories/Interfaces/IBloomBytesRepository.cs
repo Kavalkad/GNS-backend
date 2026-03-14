@@ -1,7 +1,10 @@
+using GNS.Data.Entities;
+
 namespace GNS.Data.Repositories.Interfaces
 {
     public interface IBloomBytesRepository
     {
+        Task AddBloomBytesAsync(BloomBytesEntity bloomBytesEntity, CancellationToken token = default);
         Task AddBytes(byte[] emailBytes, byte[] userNameBytes);
         Task<bool> ContainsEmailBytes(byte[] emailBytes);
         Task<bool> ContainsUserNameBytes(byte[] userNameBytes);

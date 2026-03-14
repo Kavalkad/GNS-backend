@@ -4,7 +4,9 @@ using GNS.Enums;
 using GNS.Services.Interfaces;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Contracts.Requests;
-using GNS.Contracts.Response;
+using GNS.Contracts.Responses;
+using GNS.Data.Entities;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
 
 namespace GNS.Services.Implementations
 {
@@ -12,53 +14,105 @@ namespace GNS.Services.Implementations
     {
         private readonly IEmployeesRepository _employeesRepository;
         private readonly IHasher _hasher;
-        private readonly IJwtProvider _jwtProvider;
+        private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly ICyberClubService _cyberClubService;
+        private readonly UnitOfWork _unitOfWork;
+        private readonly IBloomBytesService _bloomBytesService;
 
         public EmployeeService(
             IEmployeesRepository employeesRepository,
             IHasher hasher,
-            IJwtProvider jwtProvider,
-            IHttpContextAccessor contextAccessor
+            ITokenService tokenService,
+            IHttpContextAccessor contextAccessor,
+            ICyberClubService cyberClubService,
+            UnitOfWork unitOfWork,
+            IBloomBytesService bloomBytesService
             )
         {
             _employeesRepository = employeesRepository;
             _hasher = hasher;
-            _jwtProvider = jwtProvider;
+            _tokenService = tokenService;
             _contextAccessor = contextAccessor;
+            _cyberClubService = cyberClubService;
+            _unitOfWork = unitOfWork;
+            _bloomBytesService = bloomBytesService;
         }
         public async Task<LoginEmployeeResponse> Login(LoginEmployeeRequest request)
         {
             var employee = await _employeesRepository.GetByEmail(request.Email);
 
             bool isFound = _hasher.Verify(request.Password, employee.HashedPassword)
-                && _hasher.Verify(request.SecretWord, employee.HashedSecretWord );
+                && _hasher.Verify(request.SecretWord, employee.HashedSecretWord);
 
             if (!isFound)
             {
                 throw new Exception("Employee not found");
             }
             var role = employee.Role;
-            var token = _jwtProvider.GenerateToken(employee);
+            var token = _tokenService.GenerateAccessToken(employee);
 
-            return new LoginEmployeeResponse {Token = token, Role = nameof(role)};
+            return new LoginEmployeeResponse { Token = token, Role = nameof(role) };
         }
 
         public async Task Register(RegisterEmployeeRequest request)
         {
-            var hashedPassword = _hasher.Generate(request.Password);
-            var hashedSecretWord = _hasher.Generate(request.SecretWord);
+            // Дядя, а ты точно овнер этого клуба
+            var ownerId = _contextAccessor.GetHttpUserId();
+            var isRequiredOwner = await _cyberClubService.VerifyOwner(ownerId, request.CyberClubName);
 
-            await _employeesRepository.Register(
-                request.Email,
-                hashedPassword,
-                hashedSecretWord,
-                request.FirstName,
-                request.LastName,
-                request.Salary,
-                request.RoleName,
-                request.CyberClubName
-            );
+            if (!isRequiredOwner)
+            {
+                Results.InternalServerError($"User is not the owner of this CyberClub({request.CyberClubName})");
+                return;
+            }
+            // Дядя, а ты уверен, что клуб с таким названием существует?
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                var cyberClub = await _cyberClubService.GetByCCName(request.CyberClubName)
+                    ?? throw new Exception("CyberClub not found");
+
+                var hashedPassword = _hasher.Generate(request.Password);
+                var hashedSecretWord = _hasher.Generate(request.SecretWord);
+                
+                var employeeRole = Enum.Parse<Role>(request.RoleName);
+
+                var bloomBytesEntity = new BloomBytesEntity
+                {
+                    EmailBytes = _bloomBytesService.GetBytes(request.Email),
+                    UserNameBytes = _bloomBytesService.GetBytes(request.UserName)
+                };
+                var newEmployee = new EmployeeEntity
+                (
+                    email: request.Email,
+                    hashedPassword: hashedPassword,
+                    userName: request.UserName,
+                    role: employeeRole,
+                    firstName: request.FirstName,
+                    lastName: request.LastName,
+                    hashedSecretWord: hashedSecretWord,
+                    salary: request.Salary,
+                    cyberClubId: cyberClub.Id,
+                    bloomBytesId: bloomBytesEntity.Id
+                );
+
+                await _employeesRepository.Register(newEmployee);
+                await _bloomBytesService.SaveBloomBytesAsync(bloomBytesEntity);
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                Results.InternalServerError("Transaction failed" + ex.Message);
+            }
+
+
         }
         public async Task<List<EmployeeDto>> GetAll()
         {
@@ -85,9 +139,9 @@ namespace GNS.Services.Implementations
         }
         public async Task<List<EmployeeDto>> GetByCCId(Guid cyberClubId)
         {
-            var applicantId = _contextAccessor.GetHttpUserId(); 
+            var applicantId = _contextAccessor.GetHttpUserId();
             var employees = await _employeesRepository.GetByCyberClubId(cyberClubId);
-            
+
             if (!employees.Any(e => e.Id == applicantId && e.Role > Role.Admin))
             {
                 throw new Exception("You can't acces to cyber club employee list");
@@ -113,7 +167,7 @@ namespace GNS.Services.Implementations
         }
         public async Task UpdateEmployee(UpdateEmployeeRequest request)
         {
-            var newSalary = request.NewSalary ?? 0;  
+            var newSalary = request.NewSalary ?? 0;
             await _employeesRepository.UpdateEmployee(
                 request.FirstName,
                 request.LastName,

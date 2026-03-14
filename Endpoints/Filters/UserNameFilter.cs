@@ -22,7 +22,7 @@ namespace GNS.Endpoints.Filters
 
             if (userName.Any(c => !char.IsLetterOrDigit(c)))
             {
-                errors!.Add("username", [$"Username {userName} has incorrect format"]);
+                errors?.Add("username", [$"Username {userName} has incorrect format"]);
             }
 
             context.HttpContext.Items["ValidationErrors"] = errors;

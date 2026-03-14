@@ -5,6 +5,6 @@ namespace GNS.Contracts.Requests
 {
     public record class RegisterOwnerRequest : RegisterUserRequest
     {
-        [Required] public string SecretWord { get; set; } = string.Empty;
+        [Required] public string SuperSecretWord { get; set; } = string.Empty;
     }
 }

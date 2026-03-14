@@ -10,19 +10,20 @@ namespace GNS.Endpoints
     {
         public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder app)
         {
-            app.MapPost("login", Login);
-
-            app.MapPost("user-register", Register)
-                .AddEndpointFilter<BloomFilter>()
-                .AddEndpointFilter<FinalValidationFilter>();
-
             var user = app.MapGroup("user")
                 .RequireAuthorization(policy =>
                 {
                     policy.RequireClaim(CustomClaims.UserClaim.Type, CustomClaims.UserClaim.Value);
                 }); ;
 
+            user.MapPost("login", Login)
+                .AllowAnonymous();
 
+            user.MapPost("register", Register)
+                .AllowAnonymous()
+                .AddEndpointFilter<BloomFilter>()
+                .AddEndpointFilter<FinalValidationFilter>();
+                
             user.MapGet("get-all-clubs", GetAllClubs);
 
             user.MapGet("get-by-city", GetClubsByCity);
@@ -49,13 +50,19 @@ namespace GNS.Endpoints
             HttpContext context
         )
         {
-            var token = await userService.Login(request);
-            
-            if (context.Request.Cookies.ContainsKey("mouse"))
+            var response = await userService.Login(request);
+
+            if (context.Request.Cookies.ContainsKey("accessToken"))
             {
-                context.Response.Cookies.Delete("mouse");
+                context.Response.Cookies.Delete("acessToken");
             }
-            context.Response.Cookies.Append("mouse", token);
+            context.Response.Cookies.Append("accessToken", response.AccessToken);
+
+            if (context.Request.Cookies.ContainsKey("refreshToken"))
+            {
+                context.Response.Cookies.Delete("refreshToken");
+            }
+            context.Response.Cookies.Append("refreshToken", response.RefreshToken);
             return Results.Ok();
         }
         public static async Task<IResult> GetAwailableTimeSlots(

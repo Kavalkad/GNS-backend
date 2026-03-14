@@ -30,7 +30,6 @@ namespace GNS.Data.Repositories.Implementations
                 IsOpen = isOpen
             };
             await _dbcontext.WorkingHours.AddAsync(workingHours);
-            await _dbcontext.SaveChangesAsync();
         }
 
 
@@ -45,7 +44,8 @@ namespace GNS.Data.Repositories.Implementations
         {
             return await _dbcontext.WorkingHours
                 .AsNoTracking()
-                .FirstOrDefaultAsync(wh => wh.CyberClubId == cyberClubId
+                .FirstOrDefaultAsync(
+                    wh => wh.CyberClubId == cyberClubId
                     && wh.DayOfWeek == dayOfWeek)
                         ?? throw new Exception($"Working hours of Cyber club with Id: {cyberClubId} for day {dayOfWeek} not found");
 

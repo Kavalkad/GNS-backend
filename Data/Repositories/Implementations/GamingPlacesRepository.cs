@@ -28,8 +28,8 @@ namespace GNS.Data.Repositories.Implementations
             var gamingPlaceNumber = cyberClub.GamingPlaces.Count + 1;
             var gamingPlaces = new GamingPlaceEntity[count];
             var equipment = Enum
-                .Parse<Equipment>(equipmentName)
-                ;
+                .Parse<Equipment>(equipmentName);
+                
 
             for (int i = 0; i < count; i++, gamingPlaceNumber++)
             {
@@ -43,7 +43,7 @@ namespace GNS.Data.Repositories.Implementations
             }
 
             await _dbcontext.GamingPlaces.AddRangeAsync(gamingPlaces);
-            await _dbcontext.SaveChangesAsync();
+
         }
         public async Task<GamingPlaceEntity> GetByIdWithCC(Guid gamingPlaceId)
         {
@@ -51,7 +51,7 @@ namespace GNS.Data.Repositories.Implementations
                 .AsNoTracking()
                 .Include(gp => gp.CyberClub)
                 .FirstOrDefaultAsync(gp => gp.Id == gamingPlaceId)
-                ?? throw new Exception("GamingPlace not found()");
+                ?? throw new Exception("GamingPlace not found");
         }
         public async Task<List<GamingPlaceEntity>> GetCCGamingPlaces(Guid cyberClubId)
         {

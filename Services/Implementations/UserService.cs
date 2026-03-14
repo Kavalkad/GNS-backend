@@ -1,5 +1,8 @@
 using GNS.Contracts.Requests;
+using GNS.Contracts.Responses;
+using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
+using GNS.Enums;
 using GNS.Extensions;
 using GNS.Services.Interfaces;
 
@@ -9,37 +12,80 @@ namespace GNS.Services.Implementations
     {
         private readonly IUsersRepository _usersRepository;
         private readonly IHasher _hasher;
-        private readonly IJwtProvider _jwtProvider;
+        private readonly ITokenService _tokenService;
+        private readonly IBloomBytesService _bloomBytesService;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly UnitOfWork _unitOfWork;
 
 
 
         public UserService(
             IUsersRepository usersRepository,
             IHasher hasher,
-            IJwtProvider jwtProvider,
-            IHttpContextAccessor contextAccessor
+            ITokenService tokenService,
+            IHttpContextAccessor contextAccessor,
+            IBloomBytesService bloomBytesService,
+            UnitOfWork unitOfWork
 
         )
         {
             _usersRepository = usersRepository;
             _hasher = hasher;
-            _jwtProvider = jwtProvider;
+            _tokenService = tokenService;
             _contextAccessor = contextAccessor;
+            _bloomBytesService = bloomBytesService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task Register(RegisterUserRequest request)
         {
-            var hashedPassword = _hasher.Generate(request.Password);
 
-            await _usersRepository.AddAsync(
-                request.Email,
-                hashedPassword,
-                request.UserName
-            );
+            //var isUniqueEmail = await _bloomBytesService.FindEmailData(request.Email);
+            //var isUniqueUserName = await _bloomBytesService.FindUserNameData(request.UserName);
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                var hashedPassword = _hasher.Generate(request.Password);
+
+                var bloomBytesEntity = new BloomBytesEntity
+                {
+                    EmailBytes = _bloomBytesService.GetBytes(request.Email),
+                    UserNameBytes = _bloomBytesService.GetBytes(request.UserName),
+
+                };
+                var userEntity = new UserEntity
+                (
+                    email: request.Email,
+                    hashedPassword: hashedPassword,
+                    userName: request.UserName,
+                    bloomBytesId: bloomBytesEntity.Id
+                );
+                await _bloomBytesService.SaveBloomBytesAsync(bloomBytesEntity);
+                await _usersRepository.AddUserAsync(userEntity);
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+            }
+            catch (Exception e)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                Results.InternalServerError("Operation failed. Please retry again." + e.Message);
+            }
+
+            finally
+            {
+                await _unitOfWork.DisposeAsync();
+            }
+
         }
 
-        public async Task<string> Login(LoginUserRequest request)
+
+
+
+        public async Task<LoginUserResponse> Login(LoginUserRequest request)
         {
 
             var user = await _usersRepository.GetByEmailAsync(request.Email)
@@ -51,16 +97,24 @@ namespace GNS.Services.Implementations
             {
                 throw new Exception("Wrong password");
             }
-            var token = _jwtProvider.GenerateToken(user);
+            var accessToken = _tokenService.GenerateAccessToken(user);
+            var refreshToken = await _tokenService.GenerateRefreshToken(user.Id) ;
 
-            return token;
+            return new LoginUserResponse
+            {
+                UserName = user.UserName,
+                AccessToken = accessToken,
+                RefreshToken = refreshToken.ToString()
+            };
         }
+
         public async Task DeleteUser()
         {
             var userId = _contextAccessor.GetHttpUserId();
-            
+
             await _usersRepository.DeleteByIdAsync(userId);
         }
-       
+
+
     }
 }

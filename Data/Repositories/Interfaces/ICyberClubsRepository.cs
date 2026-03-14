@@ -5,8 +5,10 @@ namespace GNS.Data.Repositories.Interfaces
 {
     public interface ICyberClubsRepository
     {
-        Task Add(Guid ownerId, string name, string city, string address);
+        Task Add(CyberClubEntity cyberClubEntity);
         Task<List<CyberClubEntity>> GetAllClubs();
+        Task<CyberClubEntity?> GetById(Guid id);
+        Task<CyberClubEntity> GetByCCName(string cyberClubName);
         Task<List<CyberClubEntity>> GetByCity(string city);
         Task<List<CyberClubEntity>> GetByOwnerId(Guid ownerId);
         Task Update(string name, string? newName, string? newCity, string? newAddress);

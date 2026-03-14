@@ -11,18 +11,11 @@ namespace GNS.Data.Repositories.Implementations
         {
             _dbcontext = dbcontext;
         }
-        public async Task Add(Guid ownerId, string name, string city, string address)
+        public async Task Add(CyberClubEntity cyberClubEntity)
         {
-            var cyberClub = new CyberClubEntity
-            {
-                OwnerId = ownerId,
-                Name = name,
-                City = city,
-                Address = address
-            };
 
-            await _dbcontext.CyberClubs.AddAsync(cyberClub);
-            await _dbcontext.SaveChangesAsync();
+            await _dbcontext.CyberClubs.AddAsync(cyberClubEntity);
+
         }
         public async Task<List<CyberClubEntity>> GetAllClubs()
         {
@@ -47,6 +40,13 @@ namespace GNS.Data.Repositories.Implementations
             return await _dbcontext.CyberClubs
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cc => cc.Id == id);
+        }
+        public async Task<CyberClubEntity> GetByCCName(string cyberClubName)
+        {
+            return await _dbcontext.CyberClubs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cc => cc.Name == cyberClubName)
+                     ?? throw new Exception($"CyberClub with name {cyberClubName} not found");
         }
         public async Task<List<CyberClubEntity>> GetByCity(string city)
         {
@@ -105,6 +105,6 @@ namespace GNS.Data.Repositories.Implementations
 
         }
 
-       
+
     }
 }

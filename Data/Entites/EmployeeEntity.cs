@@ -13,10 +13,33 @@ namespace GNS.Data.Entities
         public decimal Penalty { get; set; } = 0;
 
 
-
         public Guid CyberClubId { get; set; }
         public CyberClubEntity? CyberClub { get; set; }
 
-
+        public EmployeeEntity(
+            string email,
+            string hashedPassword,
+            string userName,
+            string hashedSecretWord,
+            string firstName,
+            string lastName,
+            decimal salary,
+            Role role,
+            Guid bloomBytesId,
+            Guid cyberClubId
+            ) : base(
+                    email: email,
+                    hashedPassword: hashedPassword,
+                    userName: userName,
+                    bloomBytesId: bloomBytesId,
+                    role: role
+                )
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            Salary = salary;
+            HashedSecretWord = hashedSecretWord;
+            CyberClubId = cyberClubId;
+        }
     }
 }

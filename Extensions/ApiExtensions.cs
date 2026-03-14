@@ -15,24 +15,29 @@ namespace GNS.Extensions
             var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
 
             services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+                .AddAuthentication(options =>
                 {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.SaveToken = true;
+                     
                     options.TokenValidationParameters = new()
                     {
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
+                        ValidateIssuer = jwtOptions!.ValidateIssuer,
+                        ValidateAudience = jwtOptions.ValidateAudience,
+                        ValidateLifetime = jwtOptions.ValidateLifetime,
+                        ValidateIssuerSigningKey = jwtOptions.ValidateIssuerSigningKey,
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(jwtOptions!.SecretKey!))
+                            Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
                     };
                     options.Events = new JwtBearerEvents
                     {
                         OnMessageReceived = context =>
                         {
-                            context.Token = context.Request.Cookies["mouse"];
-
+                            context.Token = context.Request.Cookies["accessToken"];
 
                             return Task.CompletedTask;
                         }

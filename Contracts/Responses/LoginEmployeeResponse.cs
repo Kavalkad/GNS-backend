@@ -1,4 +1,4 @@
-namespace GNS.Contracts.Response
+namespace GNS.Contracts.Responses
 {
     public record class LoginEmployeeResponse
     {

@@ -19,6 +19,14 @@ namespace GNS.Data.Configurations
                 .HasMany(u => u.Orders)
                 .WithOne(o => o.User);
 
+            builder
+                .HasMany(u => u.RefreshTokens)
+                .WithOne(rt => rt.User);
+
+            builder
+                .HasOne(u => u.BloomBytes)
+                .WithMany(bb => bb.Users);
+
             builder.ToTable("Users");
         }
     }

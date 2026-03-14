@@ -18,6 +18,7 @@ namespace GNS.Extensions
             services.AddScoped<IOwnersRepository, OwnersRepository>();
             services.AddScoped<IGameGPsRepository, GameGPsRepository>();
             services.AddScoped<IBloomBytesRepository, BloomBytesRepository>();
+            services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
 
             return services;
         }

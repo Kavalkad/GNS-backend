@@ -1,6 +1,6 @@
 using GNS.Dto;
 using GNS.Contracts.Requests;
-using GNS.Contracts.Response;
+using GNS.Contracts.Responses;
 
 namespace GNS.Services.Interfaces
 {

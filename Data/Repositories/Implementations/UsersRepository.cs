@@ -12,21 +12,11 @@ namespace GNS.Data.Repositories.Implementations
         {
             _dbcontext = dbcontext;
         }
-        public async Task AddAsync(string email, string hashedPassword, string userName)
+        
+        public async Task AddUserAsync(UserEntity userEntity, CancellationToken token = default)
         {
-
-            var userEntity = new UserEntity()
-            {
-                Email = email,
-                HashedPassword = hashedPassword,
-                UserName = userName,
-                Role = Role.User
-            };
             await _dbcontext.Users.AddAsync(userEntity);
-            await _dbcontext.SaveChangesAsync();
-
         }
-
         public async Task DeleteByIdAsync(Guid id)
         {
             await _dbcontext.Users

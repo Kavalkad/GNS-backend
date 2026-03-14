@@ -29,13 +29,12 @@ namespace GNS.Endpoints.Filters
             {
                 errors!.Add("request", ["Invalid request body"]);
             }
-            else
+
+            if (!Enum.GetNames<OrderStatus>().Contains(request?.NewOrderStatus))
             {
-                if (!Enum.GetNames<OrderStatus>().Contains(request.NewOrderStatus))
-                {
-                    errors!.Add("orderstatus", [$"OrderStatus: {request.NewOrderStatus} is not exists"]);
-                }
+                errors!.Add("orderstatus", [$"OrderStatus: {request?.NewOrderStatus} is not exists"]);
             }
+
 
             context.HttpContext.Items["ValidationErrors"] = errors;
 

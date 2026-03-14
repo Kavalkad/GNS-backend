@@ -31,7 +31,7 @@ namespace GNS.Data.Repositories.Implementations
                 OrderStatus = OrderStatus.Booked
             };
             await _dbcontext.Orders.AddAsync(order);
-            await _dbcontext.SaveChangesAsync();
+
         }
 
         public async Task<List<OrderEntity>> GetByDate(DateOnly date)

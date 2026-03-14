@@ -14,8 +14,14 @@ namespace GNS.Endpoints
                                .RequireAuthorization(policy =>
                                {
                                    policy.RequireClaim(CustomClaims.OwnerClaim.Type, CustomClaims.OwnerClaim.Value);
-                               }); 
-            owner.MapPost("register-owner", RegisterOwner);
+                               });
+            owner.MapPost("register", RegisterOwner)
+                .AllowAnonymous()
+                .AddEndpointFilter<BloomFilter>()
+                .AddEndpointFilter<FinalValidationFilter>();
+
+            owner.MapPost("login", Login)
+                .AllowAnonymous(); 
 
 
             owner.MapPost("create-working-hours", CreateWorkingHours);
@@ -61,6 +67,27 @@ namespace GNS.Endpoints
         )
         {
             await service.RegisterOwner(request);
+            return Results.Ok();
+        }
+        public static async Task<IResult> Login(
+            [FromBody] LoginOwnerRequest request,
+            IOwnerService service,
+            HttpContext context
+        )
+        {
+            var response = await service.Login(request);
+
+            if (context.Request.Cookies.ContainsKey("accessToken"))
+            {
+                context.Response.Cookies.Delete("acessToken");
+            }
+            context.Response.Cookies.Append("accessToken", response.AccessToken);
+
+            if (context.Request.Cookies.ContainsKey("refreshToken"))
+            {
+                context.Response.Cookies.Delete("refreshToken");
+            }
+            context.Response.Cookies.Append("refreshToken", response.RefreshToken);
             return Results.Ok();
         }
 

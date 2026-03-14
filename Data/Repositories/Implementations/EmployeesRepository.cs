@@ -18,34 +18,10 @@ namespace GNS.Data.Repositories.Implementations
             _dbcontext = dbContext;
         }
 
-        public async Task Register(
-            string email,
-            string hashedPassword,
-            string hashedSecretWord,
-            string firstName,
-            string lastName,
-            decimal salary,
-            string roleName,
-            string cyberClubName)
+        public async Task Register(EmployeeEntity employee)
         {
-            var cyberClub = await _dbcontext.CyberClubs
-                .FirstOrDefaultAsync(cc => cc.Name == cyberClubName)
-                    ?? throw new Exception("CyberClub not found.");
-
-            var employee = new EmployeeEntity
-            {
-                Email = email,
-                HashedPassword = hashedPassword,
-                HashedSecretWord = hashedSecretWord,
-                FirstName = firstName,
-                LastName = lastName,
-                Salary = salary,
-                Role = Enum.Parse<Role>(roleName),
-                CyberClubId = cyberClub.Id
-            };
-
+            
             await _dbcontext.Employees.AddAsync(employee);
-            await _dbcontext.SaveChangesAsync();
 
         }
         public async Task<EmployeeEntity> GetByNames(string firstName, string lastName)
@@ -166,7 +142,6 @@ namespace GNS.Data.Repositories.Implementations
                 getter.Bonus += bonus;
                 _dbcontext.Employees.Update(getter);
                 await _dbcontext.SaveChangesAsync();
-                return;
             }
 
             if (giver.Role <= getter.Role)
@@ -174,7 +149,7 @@ namespace GNS.Data.Repositories.Implementations
                 throw new Exception("Roles don't correspond");
             }
 
-            if (giver.CyberClub.Name != getter.CyberClub.Name)
+            if (giver.CyberClub?.Name != getter.CyberClub?.Name)
             {
                 throw new Exception("You can't give bonus to employee from other CyberClub");
             }

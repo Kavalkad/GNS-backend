@@ -21,7 +21,6 @@ namespace GNS.Data.Repositories.Implementations
                 Title = title
             };
             await _dbcontext.Games.AddAsync(game);
-            await _dbcontext.SaveChangesAsync();
         }
         public async Task<List<GameEntity>> GetByFilter(string filter)
         {

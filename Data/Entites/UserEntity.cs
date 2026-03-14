@@ -12,6 +12,21 @@ namespace GNS.Data.Entities
         public ICollection<OrderEntity> Orders { get; set; } = [];
 
         public Guid BloomBytesId { get; set; }
-        public BloomBytesEntity BlomBytes { get; set; } = null!;
+        public BloomBytesEntity BloomBytes { get; set; } = null!;
+
+        public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = [];
+        public UserEntity(
+            string email,
+            string hashedPassword,
+            string userName,
+            Guid bloomBytesId,
+            Role role = Role.User)
+        {
+            Email = email;
+            HashedPassword = hashedPassword;
+            UserName = userName;
+            BloomBytesId = bloomBytesId;
+            Role = role;
+        }
     }
 }

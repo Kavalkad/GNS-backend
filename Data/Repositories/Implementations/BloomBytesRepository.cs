@@ -13,6 +13,13 @@ namespace GNS.Data.Repositories.Implementations
             _dbcontext = dbcontext;
         }
 
+        public async Task AddBloomBytesAsync(
+            BloomBytesEntity bloomBytesEntity,
+            CancellationToken token = default)
+        {
+            await _dbcontext.BloomBytes.AddAsync(bloomBytesEntity, token);
+        }
+
         public async Task AddBytes(byte[] emailBytes, byte[] userNameBytes)
         {
             var bloomBytes = new BloomBytesEntity
@@ -29,14 +36,14 @@ namespace GNS.Data.Repositories.Implementations
         {
             return await _dbcontext.BloomBytes
                 .AsNoTracking()
-                .AnyAsync(bb => bb.EmailBytes == emailBytes);
+                .AnyAsync(bb => bb.EmailBytes.SequenceEqual(emailBytes));
         }
         
         public async Task<bool> ContainsUserNameBytes(byte[] userNameBytes)
         {
             return await _dbcontext.BloomBytes
                 .AsNoTracking()
-                .AnyAsync(bb => bb.UserNameBytes == userNameBytes);
+                .AnyAsync(bb => bb.UserNameBytes.SequenceEqual(userNameBytes));
         }
 
         public async Task DeleteBytes(byte[] emailBytes, byte[] userNameBytes)

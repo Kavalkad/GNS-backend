@@ -6,10 +6,10 @@ namespace GNS.Endpoints.Filters
 {
     public class BloomFilter : IEndpointFilter
     {
-        private readonly IBloomFilterService _bloomFilterService;
-        public BloomFilter(IBloomFilterService bloomFilterService)
+        private readonly IBloomBytesService _bloomBytesService;
+        public BloomFilter(IBloomBytesService bloomBytesService)
         {
-            _bloomFilterService = bloomFilterService;
+            _bloomBytesService = bloomBytesService;
         }
         public async ValueTask<object?> InvokeAsync(
             EndpointFilterInvocationContext context,
@@ -30,8 +30,8 @@ namespace GNS.Endpoints.Filters
                 return Results.BadRequest("Invalid request body");
             }
 
-            var isEmailExists = await _bloomFilterService.FindEmailData(request.Email);
-            var isUserNameExists = await _bloomFilterService.FindUserNameData(request.UserName);
+            var isEmailExists = await _bloomBytesService.FindEmailData(request.Email);
+            var isUserNameExists = await _bloomBytesService.FindUserNameData(request.UserName);
 
 
             if (!isEmailExists && !isUserNameExists)

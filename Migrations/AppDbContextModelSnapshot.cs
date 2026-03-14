@@ -160,6 +160,34 @@ namespace backend.Migrations
                     b.ToTable("Orders");
                 });
 
+            modelBuilder.Entity("GNS.Data.Entities.RefreshTokenEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("Token")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("GNS.Data.Entities.UserEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -260,7 +288,7 @@ namespace backend.Migrations
                 {
                     b.HasBaseType("GNS.Data.Entities.UserEntity");
 
-                    b.Property<string>("HashedSecretWord")
+                    b.Property<string>("HashedSuperSecretWord")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -323,15 +351,26 @@ namespace backend.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("GNS.Data.Entities.RefreshTokenEntity", b =>
+                {
+                    b.HasOne("GNS.Data.Entities.UserEntity", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("GNS.Data.Entities.UserEntity", b =>
                 {
-                    b.HasOne("GNS.Data.Entities.BloomBytesEntity", "BlomBytes")
+                    b.HasOne("GNS.Data.Entities.BloomBytesEntity", "BloomBytes")
                         .WithMany("Users")
                         .HasForeignKey("BloomBytesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BlomBytes");
+                    b.Navigation("BloomBytes");
                 });
 
             modelBuilder.Entity("GNS.Data.Entities.WorkingHoursEntity", b =>
@@ -393,6 +432,8 @@ namespace backend.Migrations
             modelBuilder.Entity("GNS.Data.Entities.UserEntity", b =>
                 {
                     b.Navigation("Orders");
+
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("GNS.Data.Entities.OwnerEntity", b =>
