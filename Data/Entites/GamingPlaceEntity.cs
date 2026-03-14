@@ -13,9 +13,9 @@ namespace GNS.Data.Entities
         public CyberClubEntity CyberClub { get; set; } = null!;
 
 
-        public ICollection<GameEntity> Games { get; set; } = new List<GameEntity>();
+        public ICollection<GameEntity> Games { get; set; } = [];
 
 
-        public ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>(); 
+        public ICollection<OrderEntity> Orders { get; set; } = []; 
     }
 }

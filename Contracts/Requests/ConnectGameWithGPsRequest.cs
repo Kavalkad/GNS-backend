@@ -6,6 +6,6 @@ namespace GNS.Contracts.Requests
     public class CreateGameGPsRequest
     {
         [Required] public Guid GameId { get; set; }
-        [Required] public List<string> EquipmentNames { get; set; } = [];
+        [Required] public string EquipmentName { get; set; } = null!;
      }
 }

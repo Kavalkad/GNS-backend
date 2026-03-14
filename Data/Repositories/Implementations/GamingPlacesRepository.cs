@@ -14,36 +14,9 @@ namespace GNS.Data.Repositories.Implementations
             _dbcontext = dbcontext;
         }
 
-        public async Task AddGamingPlaces(
-            Guid cyberClubId,
-            int count,
-            decimal pricePerHour,
-            string equipmentName)
+        public async Task AddGamingPlaces(GamingPlaceEntity[] gamingPlaces)
         {
-            var cyberClub = _dbcontext.CyberClubs
-                .Include(cc => cc.GamingPlaces)
-                .FirstOrDefault(cc => cc.Id == cyberClubId)
-                    ?? throw new Exception($"Cyberclub with Id {cyberClubId} not found");
-
-            var gamingPlaceNumber = cyberClub.GamingPlaces.Count + 1;
-            var gamingPlaces = new GamingPlaceEntity[count];
-            var equipment = Enum
-                .Parse<Equipment>(equipmentName);
-                
-
-            for (int i = 0; i < count; i++, gamingPlaceNumber++)
-            {
-                gamingPlaces[i] = new GamingPlaceEntity
-                {
-                    CyberClubId = cyberClub.Id,
-                    Number = gamingPlaceNumber,
-                    PricePerHour = pricePerHour,
-                    Equipment = equipment
-                };
-            }
-
             await _dbcontext.GamingPlaces.AddRangeAsync(gamingPlaces);
-
         }
         public async Task<GamingPlaceEntity> GetByIdWithCC(Guid gamingPlaceId)
         {
@@ -51,7 +24,7 @@ namespace GNS.Data.Repositories.Implementations
                 .AsNoTracking()
                 .Include(gp => gp.CyberClub)
                 .FirstOrDefaultAsync(gp => gp.Id == gamingPlaceId)
-                ?? throw new Exception("GamingPlace not found");
+                    ?? throw new Exception("GamingPlace not found");
         }
         public async Task<List<GamingPlaceEntity>> GetCCGamingPlaces(Guid cyberClubId)
         {
@@ -59,6 +32,16 @@ namespace GNS.Data.Repositories.Implementations
                 .AsNoTracking()
                 .Where(gp => gp.CyberClubId == cyberClubId)
                 .ToListAsync();
+        }
+        public async Task<List<GamingPlaceEntity>> GetByEquipmentAndOwnerId(Guid ownerId, Equipment equipment)
+        {
+            return await _dbcontext.GamingPlaces
+                .AsNoTracking()
+                .Where(gp => gp.Equipment == equipment)
+                .Include(gp => gp.CyberClub)
+                .Where(gp => gp.CyberClub.OwnerId == ownerId)
+                .ToListAsync();
+
         }
         public async Task UpdateCCGamingPlaces(
             string cyberClubName,
@@ -69,11 +52,11 @@ namespace GNS.Data.Repositories.Implementations
         {
             var builder = new Microsoft.EntityFrameworkCore.Query.UpdateSettersBuilder();
         }
-        public async Task DeleteCCGamingPlaces(string cyberClubName, string equipmentName)
+        public async Task DeleteCCGamingPlaces(string cyberClubName, Equipment equipment)
         {
             await _dbcontext.GamingPlaces
                 .Where(gp => gp.CyberClub.Name == cyberClubName
-                    && gp.Equipment == Enum.Parse<Equipment>(equipmentName))
+                    && gp.Equipment == equipment)
                 .ExecuteDeleteAsync();
         }
 

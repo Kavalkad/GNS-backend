@@ -5,12 +5,7 @@ namespace GNS.Data.Repositories.Interfaces
 {
     public interface IWorkingHoursRepository
     {
-        Task CreateWorkingHours(
-            Guid cyberClubId,
-            CustomDayOfWeek dayOfWeek,
-            TimeOnly startHour,
-            TimeOnly endHour,
-            bool isOpen);
+        Task CreateWorkingHours(WorkingHoursEntity workingHours);
         Task<List<WorkingHoursEntity>> GetWorkingHoursAsync(Guid cyberClubId);
         Task<WorkingHoursEntity> GetDayWorkingHoursAsync(Guid cyberClubId, CustomDayOfWeek dayOfWeek);
         Task UpdateWorkingHours(

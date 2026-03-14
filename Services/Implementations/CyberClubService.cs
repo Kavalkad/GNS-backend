@@ -28,10 +28,6 @@ namespace GNS.Services.Implementations
 
         public async Task Add(AddCyberClubRequest request)
         {
-            try
-            {
-                await _unitOfWork.BeginTransactionAsync();
-
                 var ownerId = _contextAccessor.GetHttpUserId();
                 var cyberClubEntity = new CyberClubEntity
                 {
@@ -40,15 +36,9 @@ namespace GNS.Services.Implementations
                     Address = request.Address,
                     OwnerId = ownerId
                 };
-                await _cyberClubsRepository.Add(cyberClubEntity);
-                await _unitOfWork.SaveChangesAsync();
 
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-            }
+                await _cyberClubsRepository.Add(cyberClubEntity);
+                await _unitOfWork.SaveChangesAsync();      
 
         }
         public async Task<bool> VerifyOwner(Guid ownerId, string cyberClubName)

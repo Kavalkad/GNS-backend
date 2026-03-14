@@ -3,15 +3,21 @@ using GNS.Enums;
 using GNS.Services.Interfaces;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Contracts.Requests;
+using GNS.Data.Entities;
 
 namespace GNS.Services.Implementations
 {
     public class WorkingHoursService : IWorkingHoursService
     {
         private readonly IWorkingHoursRepository _workingHoursRepository;
-        public WorkingHoursService(IWorkingHoursRepository workingHoursRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public WorkingHoursService(
+            IWorkingHoursRepository workingHoursRepository,
+            IUnitOfWork unitOfWork
+            )
         {
             _workingHoursRepository = workingHoursRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task CreateWorkingHours(CreateWorkingHoursRequest request)
@@ -26,13 +32,19 @@ namespace GNS.Services.Implementations
                 throw new Exception($"Invalid request.CyberClubId value: {request.CyberClubId}");
             }
 
-            await _workingHoursRepository.CreateWorkingHours(
-                cyberClubId,
-                Enum.Parse<CustomDayOfWeek>(request.DayOfWeek),
-                TimeOnly.Parse(request.StartHour),
-                TimeOnly.Parse(request.EndHour),
-                _isOpen
-                );
+            var dayOfWeek = Enum.Parse<CustomDayOfWeek>(request.DayOfWeek);
+            var workingHours = new WorkingHoursEntity
+            {
+                CyberClubId = cyberClubId,
+                DayOfWeek = dayOfWeek,
+                StartHour = TimeOnly.Parse(request.StartHour),
+                EndHour = TimeOnly.Parse(request.EndHour),
+                IsOpen = _isOpen
+            };
+            
+            await _workingHoursRepository.CreateWorkingHours(workingHours);
+            await _unitOfWork.SaveChangesAsync();
+
         }
 
         public async Task<List<WorkingHoursDto>> GetWorkingHours(Guid cyberClubId)

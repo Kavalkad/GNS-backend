@@ -1,10 +1,11 @@
 using GNS.Data;
+using GNS.Services.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace GNS.Services
+namespace GNS.Services.Implementations
 {
 
-    public class UnitOfWork 
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _dbcontext;
         private IDbContextTransaction? _transaction;
@@ -76,12 +77,7 @@ namespace GNS.Services
             }
         }
 
-        public void Dispose()
-        {
-            _transaction?.Dispose();
-            _dbcontext.Dispose();
-        }
-
+        
         public async ValueTask DisposeAsync()
         {
             if (HasActiveTransaction)

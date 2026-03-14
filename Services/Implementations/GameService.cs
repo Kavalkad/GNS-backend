@@ -8,15 +8,20 @@ namespace GNS.Services.Implementations
     public class GameService : IGameService
     {
         private readonly IGamesRepository _gamesRepository;
+        private readonly UnitOfWork _unitOfWork;
 
-        public GameService(IGamesRepository gamesRepository)
+        public GameService(
+            IGamesRepository gamesRepository,
+            UnitOfWork unitOfWork)
         {
             _gamesRepository = gamesRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task Add(string title)
         {
             await _gamesRepository.Add(title);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<List<GameDto>> GetByFilter(string filter)

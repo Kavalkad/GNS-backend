@@ -9,6 +9,5 @@ namespace GNS.Services
         public string SecretKey { get; set; } = null!;
         public int AccessTokenValidityMins { get; set; }
         public int RefreshTokenValidityDays { get; set; }
-        public bool RefreshTokenRotation { get; set; }
     }
 }

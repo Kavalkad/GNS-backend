@@ -2,6 +2,7 @@
 
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace GNS.Data.Repositories.Implementations
 {
@@ -12,17 +13,16 @@ namespace GNS.Data.Repositories.Implementations
         {
             _dbcontext = dbcontext;
         }
-        public async Task Create(GameEntity game, GamingPlaceEntity[] gamingPlaces)
+        public async Task AddPairs(params GameGamingPlaceEntity[] pairs)
         {
-            var gameGamingPlaces = gamingPlaces
-                .Select(gp => new GameGamingPlaceEntity
-                {
-                    GameId = game.Id,
-                    GamingPlaceId = gp.Id
-                })
-                .ToArray();
-
-            await _dbcontext.AddRangeAsync(gameGamingPlaces);
+            await _dbcontext.GameGamingPlaces.AddRangeAsync(pairs);
+        }
+        public async Task DeletePairs(Guid gameId, IEnumerable<Guid> gamingPlaceIds)
+        {
+            await _dbcontext.GameGamingPlaces
+                .Where(p => p.GameId == gameId && gamingPlaceIds.Contains(p.GamingPlaceId))
+                .ExecuteDeleteAsync();
+                
         }
 
     }

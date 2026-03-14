@@ -13,22 +13,8 @@ namespace GNS.Data.Repositories.Implementations
             _dbcontext = dbcontext;
         }
 
-        public async Task CreateWorkingHours(
-            Guid cyberClubId,
-            CustomDayOfWeek dayOfWeek,
-            TimeOnly startHour,
-            TimeOnly endHour,
-            bool isOpen
-            )
+        public async Task CreateWorkingHours(WorkingHoursEntity workingHours)
         {
-            var workingHours = new WorkingHoursEntity
-            {
-                CyberClubId = cyberClubId,
-                DayOfWeek = dayOfWeek,
-                StartHour = startHour,
-                EndHour = endHour,
-                IsOpen = isOpen
-            };
             await _dbcontext.WorkingHours.AddAsync(workingHours);
         }
 

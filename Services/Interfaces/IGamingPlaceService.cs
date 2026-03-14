@@ -1,6 +1,8 @@
 using GNS.Contracts;
 using GNS.Contracts.Requests;
+using GNS.Data.Entities;
 using GNS.Dto;
+using GNS.Enums;
 
 namespace GNS.Services.Interfaces
 {
@@ -10,5 +12,6 @@ namespace GNS.Services.Interfaces
         Task<List<GamingPlaceDto>> GetCCGamingPlaces(Guid cyberClubId);
         Task UpdateCCGamingPlaces(UpdateCCGamingPlacesRequest request);
         Task DeleteCCGamingPlaces(DeleteCCGamingPlacesRequest request);
+        Task<List<GamingPlaceEntity>> GetByEquipment(Equipment equipment);
     }
 }
