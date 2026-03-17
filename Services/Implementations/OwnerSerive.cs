@@ -8,22 +8,19 @@ namespace GNS.Services.Implementations
 {
     public class OwnerService : IOwnerService
     {
-        private readonly IUsersRepository _usersRepository;
         private readonly IOwnersRepository _ownersRepository;
         private readonly IHasher _hasher;
         private readonly ITokenService _tokenService;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IBloomBytesService _bloomBytesService;
         public OwnerService(
             IOwnersRepository ownersRepository,
-            IUsersRepository userService,
             IHasher hasher,
             ITokenService tokenService,
-            UnitOfWork unitOfWork,
+            IUnitOfWork unitOfWork,
             IBloomBytesService bloomBytesService)
         {
             _ownersRepository = ownersRepository;
-            _usersRepository = userService;
             _hasher = hasher;
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
@@ -80,7 +77,8 @@ namespace GNS.Services.Implementations
         public async Task<LoginOwnerResponse> Login(LoginOwnerRequest request)
         {
             var owner = await _ownersRepository.GetByEmail(request.Email);
-            var result = _hasher.Verify(request.Password, owner.HashedPassword);
+            var result = _hasher.Verify(request.Password, owner.HashedPassword)
+                && _hasher.Verify(request.SuperSecretWord, owner.HashedSuperSecretWord);
 
             if (!result)
             {
@@ -91,7 +89,6 @@ namespace GNS.Services.Implementations
 
             return new LoginOwnerResponse
             {
-
                 AccessToken = accessToken,
                 RefreshToken = refreshToken.ToString()
             };

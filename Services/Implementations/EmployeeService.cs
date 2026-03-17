@@ -17,7 +17,7 @@ namespace GNS.Services.Implementations
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly ICyberClubService _cyberClubService;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IBloomBytesService _bloomBytesService;
 
         public EmployeeService(
@@ -26,7 +26,7 @@ namespace GNS.Services.Implementations
             ITokenService tokenService,
             IHttpContextAccessor contextAccessor,
             ICyberClubService cyberClubService,
-            UnitOfWork unitOfWork,
+            IUnitOfWork unitOfWork,
             IBloomBytesService bloomBytesService
             )
         {
@@ -40,25 +40,34 @@ namespace GNS.Services.Implementations
         }
         public async Task<LoginEmployeeResponse> Login(LoginEmployeeRequest request)
         {
-            var employee = await _employeesRepository.GetByEmail(request.Email);
+            var employee = await _employeesRepository.GetByEmail(request.Email)
+                ?? throw new Exception($"Employee with email {request.Email} not found");
+            
 
             bool isFound = _hasher.Verify(request.Password, employee.HashedPassword)
                 && _hasher.Verify(request.SecretWord, employee.HashedSecretWord);
 
             if (!isFound)
             {
-                throw new Exception("Employee not found");
+                throw new Exception("You entered wrong emplyee data");
             }
-            var role = employee.Role;
-            var token = _tokenService.GenerateAccessToken(employee);
 
-            return new LoginEmployeeResponse { Token = token, Role = nameof(role) };
+            var accessToken = _tokenService.GenerateAccessToken(employee);
+            var refreshToken =  await _tokenService.GenerateRefreshToken(employee.Id);
+            var role = Enum.GetName(employee.Role);
+            
+            return new LoginEmployeeResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken.ToString()!,
+                Role = role!
+            };
         }
 
         public async Task Register(RegisterEmployeeRequest request)
         {
             // Дядя, а ты точно овнер этого клуба
-            var ownerId = _contextAccessor.GetHttpUserId();
+            var ownerId = _contextAccessor.TryGetHttpUserId();
             var isRequiredOwner = await _cyberClubService.VerifyOwner(ownerId, request.CyberClubName);
 
             if (!isRequiredOwner)
@@ -139,7 +148,7 @@ namespace GNS.Services.Implementations
         }
         public async Task<List<EmployeeDto>> GetByCCId(Guid cyberClubId)
         {
-            var applicantId = _contextAccessor.GetHttpUserId();
+            var applicantId = _contextAccessor.TryGetHttpUserId();
             var employees = await _employeesRepository.GetByCyberClubId(cyberClubId);
 
             if (!employees.Any(e => e.Id == applicantId && e.Role > Role.Admin))
@@ -195,7 +204,7 @@ namespace GNS.Services.Implementations
         public async Task GiveBonus(GiveBonusRequest request)
         {
 
-            var id = _contextAccessor.GetHttpUserId();
+            var id = _contextAccessor.TryGetHttpUserId();
 
             await _employeesRepository.GiveBonus(
                 id,
@@ -207,7 +216,7 @@ namespace GNS.Services.Implementations
         public async Task GivePenalty(GivePenaltyRequest request)
         {
 
-            var id = _contextAccessor.GetHttpUserId();
+            var id = _contextAccessor.TryGetHttpUserId();
 
             await _employeesRepository.GivePenalty(
                 id,

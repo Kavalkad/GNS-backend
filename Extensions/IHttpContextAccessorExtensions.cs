@@ -4,7 +4,7 @@ namespace GNS.Extensions
 {
     public static class IHttpContextAccessorExtensions
     {
-        public static Guid GetHttpUserId(this IHttpContextAccessor accessor)
+        public static Guid TryGetHttpUserId(this IHttpContextAccessor accessor)
         {
             var stringId = accessor.HttpContext.User
                 .Claims.FirstOrDefault(c => c.Type == "Id").Value

@@ -8,11 +8,11 @@ namespace GNS.Services.Implementations
     public class GameService : IGameService
     {
         private readonly IGamesRepository _gamesRepository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
         public GameService(
             IGamesRepository gamesRepository,
-            UnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork)
         {
             _gamesRepository = gamesRepository;
             _unitOfWork = unitOfWork;

@@ -5,13 +5,12 @@ namespace GNS.Services.Interfaces
 {
     public interface ITimeSlotsService
     {
-        Task<List<TimeSlotDto>> GetAvailableSlotsAsync(
+        Task<IEnumerable<TimeSlotDto>> GetUnAvailableSlotsAsync(
             Guid cyberClubId,
             Guid gamingPlaceId,
             DateOnly date,
-            TimeSpan duration,
             CancellationToken token = default
         );
-        Task<List<TimeSlotDto>> GetAvailableSlotsAsync(GetAvailableTimeSlotsRequest request);
+        Task<IEnumerable<TimeSlotDto>> GetAvailableSlotsAsync(GetAvailableTimeSlotsRequest request);
     }
 }

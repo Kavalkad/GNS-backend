@@ -19,7 +19,7 @@ namespace GNS.Data.Repositories.Interfaces
             Guid gamingPlaceId,
             DateOnly date,
             TimeOnly startTime,
-            int duration
+            TimeOnly endTime
         );
         Task UpdateStatus(Guid orderId, string status);
         

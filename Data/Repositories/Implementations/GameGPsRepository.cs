@@ -13,7 +13,7 @@ namespace GNS.Data.Repositories.Implementations
         {
             _dbcontext = dbcontext;
         }
-        public async Task AddPairs(params GameGamingPlaceEntity[] pairs)
+        public async Task AddPairs(GameGamingPlaceEntity[] pairs)
         {
             await _dbcontext.GameGamingPlaces.AddRangeAsync(pairs);
         }

@@ -15,7 +15,6 @@ namespace GNS.Data.Repositories.Implementations
         public async Task AddAsync(RefreshTokenEntity refreshToken)
         {
             await _dbcontext.RefreshTokens.AddAsync(refreshToken);
-            await _dbcontext.SaveChangesAsync();
         }
 
         // !!!!!!!!!!!!!!!!!

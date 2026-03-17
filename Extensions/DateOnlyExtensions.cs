@@ -2,7 +2,7 @@ using GNS.Enums;
 
 namespace GNS.Extensions
 {
-    public static class DateOnluExtensions
+    public static class DateOnlyExtensions
     {
         public static CustomDayOfWeek ParseToCustomDayOfWeek(this DateOnly date)
         {

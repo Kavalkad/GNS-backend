@@ -1,4 +1,5 @@
 using GNS.Contracts.Requests;
+using GNS.Data.Entities;
 using GNS.Dto;
 
 namespace GNS.Services.Interfaces
@@ -7,6 +8,7 @@ namespace GNS.Services.Interfaces
     {
         Task CreateOrder(CreateOrderRequest requset);
         Task<List<OrderDto>> GetActiveOrders();
+        Task<IEnumerable<OrderEntity>> GetByDateAndGamingPlace(DateOnly date, Guid gamingPlaceId);
         Task<List<OrderDto>> GetTodaysOrders();
         Task<List<OrderDto>> GetByUserEmail(string email);
         Task<List<OrderDto>> GetByUserName(string userName);

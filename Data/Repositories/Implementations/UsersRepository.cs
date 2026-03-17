@@ -23,6 +23,13 @@ namespace GNS.Data.Repositories.Implementations
                 .Where(u => u.Id == id)
                 .ExecuteDeleteAsync();
         }
+        public async Task<UserEntity?> GetById(Guid userId)
+        {
+            return await _dbcontext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == userId);
+                    
+        }
         public async Task<UserEntity?> GetByEmailAsync(string email)
         {
             return await _dbcontext.Users

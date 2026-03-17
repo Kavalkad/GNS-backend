@@ -32,8 +32,14 @@ namespace GNS.Data.Repositories.Implementations
         {
             return await _dbcontext.Owners
                 .AsNoTracking()
-                .SingleOrDefaultAsync(o => o.Email == email)
+                .FirstOrDefaultAsync(o => o.Email == email)
                     ?? throw new Exception($"Owner with email {email} not found");
+        }
+         public async Task<OwnerEntity?> GetById(Guid ownerId)
+        {
+            return await _dbcontext.Owners
+                .AsNoTracking()
+                .FirstOrDefaultAsync(o => o.Id == ownerId);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace GNS.Services.Implementations
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICyberClubService _cyberClubService;
         private readonly IHttpContextAccessor _contextAccessor;
+
         public GamingPlaceService(
             IGamingPlacesRepository gamingPlacesRepository,
             IUnitOfWork unitOfWork,
@@ -34,6 +35,7 @@ namespace GNS.Services.Implementations
             if (cyberClub is null)
             {
                 Results.InternalServerError("CyberClub not found");
+                return;
             }
 
             var maxGamingPlaceNumber = cyberClub?.GamingPlacesCount;
@@ -45,7 +47,7 @@ namespace GNS.Services.Implementations
             {
                 var gamingPlace = new GamingPlaceEntity
                 {
-                    Number = i + maxGamingPlaceNumber!.Value,
+                    Number = i + maxGamingPlaceNumber!.Value + 1,
                     PricePerHour = request.PricePerHour,
                     Equipment = _equipment,
                     CyberClubId = cyberClub!.Id
@@ -58,7 +60,7 @@ namespace GNS.Services.Implementations
         }
         public async Task<List<GamingPlaceEntity>> GetByEquipment(Equipment equipment)
         {
-            var ownerId = _contextAccessor.GetHttpUserId();
+            var ownerId = _contextAccessor.TryGetHttpUserId();
             
             return await _gamingPlacesRepository.GetByEquipmentAndOwnerId(ownerId: ownerId, equipment: equipment);
         }

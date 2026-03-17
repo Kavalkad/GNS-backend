@@ -15,7 +15,7 @@ namespace GNS.Services.Implementations
         private readonly ITokenService _tokenService;
         private readonly IBloomBytesService _bloomBytesService;
         private readonly IHttpContextAccessor _contextAccessor;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
 
 
@@ -25,7 +25,7 @@ namespace GNS.Services.Implementations
             ITokenService tokenService,
             IHttpContextAccessor contextAccessor,
             IBloomBytesService bloomBytesService,
-            UnitOfWork unitOfWork
+            IUnitOfWork unitOfWork
 
         )
         {
@@ -75,11 +75,6 @@ namespace GNS.Services.Implementations
                 Results.InternalServerError("Operation failed. Please retry again." + e.Message);
             }
 
-            finally
-            {
-                await _unitOfWork.DisposeAsync();
-            }
-
         }
 
 
@@ -97,6 +92,7 @@ namespace GNS.Services.Implementations
             {
                 throw new Exception("Wrong password");
             }
+            
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = await _tokenService.GenerateRefreshToken(user.Id) ;
 
@@ -110,9 +106,10 @@ namespace GNS.Services.Implementations
 
         public async Task DeleteUser()
         {
-            var userId = _contextAccessor.GetHttpUserId();
+            var userId = _contextAccessor.TryGetHttpUserId();
 
             await _usersRepository.DeleteByIdAsync(userId);
+            await _unitOfWork.SaveChangesAsync();
         }
 
 

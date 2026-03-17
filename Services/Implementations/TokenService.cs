@@ -15,17 +15,14 @@ namespace GNS.Services.Implementations
     public class TokensService : ITokenService
     {
         private readonly JwtOptions _jwtOptions;
-        private readonly IHasher _hasher;
         private readonly IRefreshTokensRepository _refreshTokensRepository;
 
         public TokensService(
             IOptions<JwtOptions> options,
-            IHasher hasher,
             IRefreshTokensRepository refreshTokensRepository
             )
         {
             _jwtOptions = options.Value;
-            _hasher = hasher;
             _refreshTokensRepository = refreshTokensRepository;
         }
 

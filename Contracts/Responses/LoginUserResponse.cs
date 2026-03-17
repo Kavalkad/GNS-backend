@@ -1,6 +1,6 @@
 namespace GNS.Contracts.Responses
 {
-    public class LoginUserResponse
+    public record class LoginUserResponse
     {
         public string UserName { get; set; } = null!;
         public string AccessToken { get; set; } = null!;

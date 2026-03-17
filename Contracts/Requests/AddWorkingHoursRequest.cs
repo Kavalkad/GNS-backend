@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GNS.Contracts.Requests
 {
-    public record class CreateWorkingHoursRequest
+    public record class AddWorkingHoursRequest
     {
         [Required] public string CyberClubId { get; set; } = string.Empty;
         [Required] public string DayOfWeek { get; set; } = string.Empty;

@@ -19,7 +19,7 @@ namespace GNS.Data.Repositories.Implementations
             Guid gamingPlaceId,
             DateOnly date,
             TimeOnly startTime,
-            int duration)
+            TimeOnly endTime)
         {
             var order = new OrderEntity
             {
@@ -27,7 +27,7 @@ namespace GNS.Data.Repositories.Implementations
                 GamingPlaceId = gamingPlaceId,
                 Date = date,
                 StartTime = startTime,
-                EndTime = startTime.AddMinutes(duration * 60),
+                EndTime = endTime,
                 OrderStatus = OrderStatus.Booked
             };
             await _dbcontext.Orders.AddAsync(order);

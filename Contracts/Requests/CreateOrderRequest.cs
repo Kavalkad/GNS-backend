@@ -4,9 +4,10 @@ namespace GNS.Contracts.Requests
 {
     public record class CreateOrderRequest
     {
+        [Required] public Guid CyberClubId { get; set; }
         [Required] public Guid GamingPlaceId { get; set; }
-        [Required] public string DateTime { get; set; } = string.Empty;
-        [Required] public int Duration { get; set; }
+        [Required] public string DateTimeStart { get; set; } = string.Empty;
+        [Required] public string DateTimeEnd { get; set; } = string.Empty;
 
     }
 }

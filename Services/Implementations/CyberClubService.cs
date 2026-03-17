@@ -12,13 +12,13 @@ namespace GNS.Services.Implementations
         private readonly ICyberClubsRepository _cyberClubsRepository;
         private readonly IOwnersRepository _ownersRepository;
         private readonly IHttpContextAccessor _contextAccessor;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
         public CyberClubService(
             ICyberClubsRepository cyberClubsRepository,
             IOwnersRepository ownersRepository,
             IHttpContextAccessor contextAccessor,
-            UnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork)
         {
             _cyberClubsRepository = cyberClubsRepository;
             _contextAccessor = contextAccessor;
@@ -28,7 +28,7 @@ namespace GNS.Services.Implementations
 
         public async Task Add(AddCyberClubRequest request)
         {
-                var ownerId = _contextAccessor.GetHttpUserId();
+                var ownerId = _contextAccessor.TryGetHttpUserId();
                 var cyberClubEntity = new CyberClubEntity
                 {
                     Name = request.Name,
@@ -75,7 +75,7 @@ namespace GNS.Services.Implementations
         }
         public async Task<List<CyberClubDto>> GetMyCyberClubs()
         {
-            var ownerId = _contextAccessor.GetHttpUserId();
+            var ownerId = _contextAccessor.TryGetHttpUserId();
             bool isOwner = await _ownersRepository.ContainsOwnerId(ownerId);
             if (!isOwner)
             {

@@ -4,7 +4,7 @@ namespace GNS.Data.Repositories.Interfaces
 {
     public interface IGameGPsRepository
     {
-        Task AddPairs(params GameGamingPlaceEntity[] pairs);
+        Task AddPairs(GameGamingPlaceEntity[] pairs);
         Task DeletePairs(Guid gameId, IEnumerable<Guid> gamingPlaceIds);
     }
 }

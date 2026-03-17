@@ -48,8 +48,8 @@ namespace GNS.Endpoints.Filters
             {
                 errors!.Add("newdayofweek", [$"Invalid NewIsOpen value: {request.NewIsOpen}"]);
             }
-            context.HttpContext.Items["ValidationErrors"] = errors;
 
+            context.HttpContext.Items["ValidationErrors"] = errors;
 
             return await next(context);
         }

@@ -8,9 +8,13 @@ namespace GNS.Services.Implementations
     public class BloomBytesService : IBloomBytesService
     {
         private readonly IBloomBytesRepository _bloomBytesRepo;
-        public BloomBytesService(IBloomBytesRepository bloomBytesRepo)
+        private readonly IUnitOfWork _unitOfWork;
+        public BloomBytesService(
+            IBloomBytesRepository bloomBytesRepo,
+            IUnitOfWork unitOfWork)
         {
             _bloomBytesRepo = bloomBytesRepo;
+            _unitOfWork = unitOfWork;
         }
         public byte[] GetBytes(string word)
         {
@@ -44,6 +48,8 @@ namespace GNS.Services.Implementations
             )
         {
             await _bloomBytesRepo.AddBloomBytesAsync(bloomBytesEntity);
+            await _unitOfWork.SaveChangesAsync();
+
         }
     }
 }

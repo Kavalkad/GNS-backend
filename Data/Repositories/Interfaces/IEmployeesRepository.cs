@@ -6,6 +6,7 @@ namespace GNS.Data.Repositories.Interfaces
     public interface IEmployeesRepository
     {
         Task Register(EmployeeEntity employee);
+        Task<EmployeeEntity?> GetById(Guid id);
         Task<EmployeeEntity> GetByEmail(string email);
         Task<EmployeeEntity> GetByNames(string firstName, string LastName);
         Task<List<EmployeeEntity>> GetByCyberClubId(Guid ccId);

@@ -20,7 +20,7 @@ namespace GNS.Services.Implementations
             _unitOfWork = unitOfWork;
         }
 
-        public async Task CreateWorkingHours(CreateWorkingHoursRequest request)
+        public async Task AddWorkingHours(AddWorkingHoursRequest request)
         {
             if (!bool.TryParse(request.IsOpen, out bool _isOpen))
             {
@@ -33,6 +33,7 @@ namespace GNS.Services.Implementations
             }
 
             var dayOfWeek = Enum.Parse<CustomDayOfWeek>(request.DayOfWeek);
+
             var workingHours = new WorkingHoursEntity
             {
                 CyberClubId = cyberClubId,
@@ -41,13 +42,13 @@ namespace GNS.Services.Implementations
                 EndHour = TimeOnly.Parse(request.EndHour),
                 IsOpen = _isOpen
             };
-            
+
             await _workingHoursRepository.CreateWorkingHours(workingHours);
             await _unitOfWork.SaveChangesAsync();
 
         }
 
-        public async Task<List<WorkingHoursDto>> GetWorkingHours(Guid cyberClubId)
+        public async Task<List<WorkingHoursDto>> GetByCCId(Guid cyberClubId)
         {
             var workingHours = await _workingHoursRepository.GetWorkingHoursAsync(cyberClubId);
 
@@ -56,6 +57,13 @@ namespace GNS.Services.Implementations
                 .Select(wh => new WorkingHoursDto(wh))
                 .ToList();
         }
+        public async Task<WorkingHoursEntity?> GetByDayAndCCId(Guid cyberClubId, CustomDayOfWeek dayOfWeek)
+        {
+            var workingHours = await _workingHoursRepository.GetWorkingHoursAsync(cyberClubId);
+
+            return workingHours.SingleOrDefault(wh => wh.DayOfWeek == dayOfWeek);
+        }
+
         public async Task UpdateWorkingHours(UpdateWorkingHoursRequest request)
         {
             CustomDayOfWeek? newDayOfWeek = Enum.Parse<CustomDayOfWeek>(request.NewDayOfWeek);

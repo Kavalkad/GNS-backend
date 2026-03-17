@@ -11,93 +11,58 @@ namespace GNS.Services.Implementations
 {
     public class TimeSlotsService : ITimeSlotsService
     {
-        private readonly IWorkingHoursRepository _workingHoursRepository;
-        private readonly IOrdersRepository _ordersRepository;
-        private readonly IGamingPlacesRepository _gamingPlacesRepository;
+        private readonly IWorkingHoursService _workingHoursService;
+        private readonly IOrderService _orderService;
+
 
         public TimeSlotsService(
-            IWorkingHoursRepository workingHoursRepository,
-            IOrdersRepository ordersRepository,
-            IGamingPlacesRepository gamingPlacesRepository
+            IWorkingHoursService workingHoursService,
+            IOrderService orderService
         )
         {
-            _workingHoursRepository = workingHoursRepository;
-            _ordersRepository = ordersRepository;
-            _gamingPlacesRepository = gamingPlacesRepository;
+            _workingHoursService = workingHoursService;
+            _orderService = orderService;
         }
 
-        public async Task<List<TimeSlotDto>> GetAvailableSlotsAsync(
+        public async Task<IEnumerable<TimeSlotDto>> GetUnAvailableSlotsAsync(
             Guid cyberClubId,
             Guid gamingPlaceId,
             DateOnly date,
-            TimeSpan duration,
             CancellationToken token = default
         )
         {
-
-            var workingHours = await _workingHoursRepository
-                .GetDayWorkingHoursAsync(cyberClubId, date.ParseToCustomDayOfWeek());
+            var dayOfWeek = date.ParseToCustomDayOfWeek();
+            var workingHours = await _workingHoursService.GetByDayAndCCId(cyberClubId, dayOfWeek)
+                ?? throw new Exception($"WorkingHours for day: {dayOfWeek} not found.");
 
             if (!workingHours.IsOpen)
             {
-                throw new Exception($"At {date} CyberClub is closed");
+                throw new Exception($"At {date} CyberClub is closed.");
             }
             //var gamingPlace = await _gamingPlacesRepository.GetByIdWithCC(gamingPlaceId);
 
 
-            var dateOrders = await _ordersRepository.GetDateOrdersOfGamingPlace(
-                gamingPlaceId,
-                date
+            var gamingPlaceDateOrders = await _orderService.GetByDateAndGamingPlace(
+                date: date,
+                gamingPlaceId: gamingPlaceId
             );
 
-            var unavailableTimeSlots = dateOrders
+            var unavailableTimeSlots = gamingPlaceDateOrders
                 .Select(o => new TimeSlotDto(o.StartTime, o.EndTime))
-                .Distinct()
                 .OrderBy(ts => ts.StartTime)
                 .ToList();
 
-            return CalculateAvailableTimeSlots(
-                workingHours.StartHour,
-                workingHours.EndHour,
-                duration,
-                unavailableTimeSlots);
+            return unavailableTimeSlots;
 
         }
 
 
-
-        private List<TimeSlotDto> CalculateAvailableTimeSlots(
-            TimeOnly openTime,
-            TimeOnly closeTime,
-            TimeSpan duration,
-            List<TimeSlotDto> unavailableTimeSlots
-        )
+        public async Task<IEnumerable<TimeSlotDto>> GetAvailableSlotsAsync(GetAvailableTimeSlotsRequest request)
         {
-            var availableSlots = new List<TimeSlotDto>();
-
-            for (
-                TimeOnly startTime = openTime,
-                endTime = openTime.AddMinutes(duration.Minutes);
-                    endTime <= closeTime;
-                        startTime.AddMinutes(duration.Minutes),
-                        endTime.AddMinutes(duration.Minutes))
-            {
-                var timeSlot = new TimeSlotDto(startTime, endTime);
-
-                if (!unavailableTimeSlots.Contains(timeSlot))
-                {
-                    availableSlots.Add(timeSlot);
-                }
-            }
-            return availableSlots;
-        }
-        public Task<List<TimeSlotDto>> GetAvailableSlotsAsync(GetAvailableTimeSlotsRequest request)
-        {
-            return GetAvailableSlotsAsync(
+            return await GetUnAvailableSlotsAsync(
                 request.CyberClubId,
                 request.GamingPlaceId,
-                request.Date,
-                request.Duration);
+                request.Date);
         }
     }
 }

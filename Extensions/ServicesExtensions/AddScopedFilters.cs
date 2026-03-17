@@ -20,6 +20,10 @@ namespace GNS.Extensions
             services.AddScoped<FinalValidationFilter>();
             services.AddScoped<UpdateWorkingHoursFilter>();
             services.AddScoped<BloomFilter>();
+            services.AddScoped<OwnerVerificationFilter>();
+            services.AddScoped<EmployeeVerificationFilter>();
+            services.AddScoped<UserVerificationFilter>();
+            
 
             return services;
         }

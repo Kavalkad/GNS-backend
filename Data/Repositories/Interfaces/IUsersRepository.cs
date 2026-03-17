@@ -5,7 +5,7 @@ namespace GNS.Data.Repositories.Interfaces
     public interface IUsersRepository
     {
         Task AddUserAsync(UserEntity userEntity, CancellationToken token = default);
-
+        Task<UserEntity?> GetById(Guid userId);
         Task<UserEntity?> GetByEmailAsync(string email);
         Task<UserEntity?> GetByUserNameAsync(string userName);
         Task DeleteByIdAsync(Guid id);

@@ -5,6 +5,7 @@ namespace GNS.Data.Repositories.Interfaces
     public interface IOwnersRepository
     {
         Task AddOwner(OwnerEntity ownerEntity);
+        Task<OwnerEntity?> GetById(Guid ownerId);
         Task<OwnerEntity> GetByEmail(string email);
         Task<bool> ContainsOwnerId(Guid ownerId);
     }

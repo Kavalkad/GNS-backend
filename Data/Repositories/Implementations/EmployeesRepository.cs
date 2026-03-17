@@ -20,9 +20,15 @@ namespace GNS.Data.Repositories.Implementations
 
         public async Task Register(EmployeeEntity employee)
         {
-            
+
             await _dbcontext.Employees.AddAsync(employee);
 
+        }
+        public async Task<EmployeeEntity?> GetById(Guid id)
+        {
+            return await _dbcontext.Employees
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
         }
         public async Task<EmployeeEntity> GetByNames(string firstName, string lastName)
         {

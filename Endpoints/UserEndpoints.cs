@@ -17,7 +17,8 @@ namespace GNS.Endpoints
                 }); ;
 
             user.MapPost("login", Login)
-                .AllowAnonymous();
+                .AllowAnonymous()
+                .AddEndpointFilter<UserVerificationFilter>();
 
             user.MapPost("register", Register)
                 .AllowAnonymous()
@@ -49,7 +50,7 @@ namespace GNS.Endpoints
             IUserService userService,
             HttpContext context
         )
-        {
+        { 
             var response = await userService.Login(request);
 
             if (context.Request.Cookies.ContainsKey("accessToken"))

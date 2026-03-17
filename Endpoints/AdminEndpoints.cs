@@ -1,6 +1,8 @@
+using GNS.Contracts.Requests;
 using GNS.Endpoints.Filters;
 using GNS.Services;
 using GNS.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GNS.Endpoints
 {
@@ -14,27 +16,30 @@ namespace GNS.Endpoints
                     policy.RequireClaim(CustomClaims.AdminClaim.Type, CustomClaims.AdminClaim.Value);
                 });
 
-            admin.MapGet("get-orders-for-today", GetTodaysOrders);
-            admin.MapGet("throwException", ThrowException);
-            admin.MapGet("get-by-user-email", GetUserOrdersByEmail)
+            var orders = admin.MapGroup("orders");
+            
+            orders.MapGet("get-for-today", GetTodaysOrders);
+            orders.MapGet("throwException", ThrowException);
+            orders.MapGet("get-by-user-email", GetUserOrdersByEmail)
                 .AddEndpointFilter<EmailFilter>()
                 .AddEndpointFilter<FinalValidationFilter>();
 
-            admin.MapGet("get-by-username", GetOrdersByUserName)
+            orders.MapGet("get-by-username", GetOrdersByUserName)
                 .AddEndpointFilter<UserNameFilter>()
                 .AddEndpointFilter<FinalValidationFilter>(); ;
 
-            admin.MapPost("update-order-status", UpdateOrderStatus)
+            orders.MapPost("update-status", UpdateOrderStatus)
                 .AddEndpointFilter<OrderStatusFilter>()
                 .AddEndpointFilter<FinalValidationFilter>();
 
 
             return app;
         }
+         
         public static Task<IResult> ThrowException()
         {
             throw new Exception("Exception thrown");
-            
+
         }
         public static async Task<IResult> GetTodaysOrders(
             IOrderService service
@@ -63,14 +68,13 @@ namespace GNS.Endpoints
         }
 
         public static async Task<IResult> UpdateOrderStatus(
-            Guid orderId,
-            string statusName,
+            [FromBody] UpdateOrderStatusRequest request,
             IOrderService service
         )
         {
-            await service.UpdateOrderStatus(orderId, statusName);
+            await service.UpdateOrderStatus(request.OrderId, request.NewOrderStatus);
 
-            return Results.Ok($"Order status is successfully changed on {statusName}");
+            return Results.Ok($"Order status is successfully changed on {request.NewOrderStatus}");
         }
 
     }
