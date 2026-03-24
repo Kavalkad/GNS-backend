@@ -100,7 +100,7 @@ namespace GNS.Services.Implementations
             {
                 UserName = user.UserName,
                 AccessToken = accessToken,
-                RefreshToken = refreshToken.ToString()
+                RefreshToken = refreshToken.Token.ToString()
             };
         }
 

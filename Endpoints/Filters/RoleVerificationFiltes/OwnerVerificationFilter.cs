@@ -7,14 +7,10 @@ namespace GNS.Endpoints.Filters
 {
     public class OwnerVerificationFilter : IEndpointFilter
     {
-        private readonly IVerificationService _verificationService;
+
         private readonly IOwnersRepository _ownersRepository;
-        public OwnerVerificationFilter(
-            IVerificationService verificationService,
-            IOwnersRepository ownersRepository
-            )
+        public OwnerVerificationFilter(IOwnersRepository ownersRepository)
         {
-            _verificationService = verificationService;
             _ownersRepository = ownersRepository;
         }
         
@@ -22,9 +18,10 @@ namespace GNS.Endpoints.Filters
             EndpointFilterInvocationContext context,
             EndpointFilterDelegate next)
         {
-            var ownerStringId = context.HttpContext.User.FindFirstValue("Id");
+            var ownerStringId = context.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "Id")
+                ?? throw new Exception("Cannot find id claim");
 
-            if (Guid.TryParse(ownerStringId, out Guid ownerId))
+            if (Guid.TryParse(ownerStringId.Value, out Guid ownerId))
             {
                 return Results.BadRequest("Id has incorrect format");
             }
@@ -32,7 +29,7 @@ namespace GNS.Endpoints.Filters
 
             if (owner is null)
             {
-                return Results.BadRequest("Employee data doesn't exists");
+                return Results.BadRequest("Owner data doesn't exists");
             }
             
             return await next(context);

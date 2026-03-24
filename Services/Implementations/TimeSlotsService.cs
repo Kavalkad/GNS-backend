@@ -14,7 +14,6 @@ namespace GNS.Services.Implementations
         private readonly IWorkingHoursService _workingHoursService;
         private readonly IOrderService _orderService;
 
-
         public TimeSlotsService(
             IWorkingHoursService workingHoursService,
             IOrderService orderService
@@ -24,10 +23,10 @@ namespace GNS.Services.Implementations
             _orderService = orderService;
         }
 
-        public async Task<IEnumerable<TimeSlotDto>> GetUnAvailableSlotsAsync(
+        public async Task<List<TimeSlotDto>> GetUnAvailableSlotsAsync(
             Guid cyberClubId,
             Guid gamingPlaceId,
-            DateOnly date,
+            DateTime date,
             CancellationToken token = default
         )
         {
@@ -37,27 +36,25 @@ namespace GNS.Services.Implementations
 
             if (!workingHours.IsOpen)
             {
-                throw new Exception($"At {date} CyberClub is closed.");
+                Results.Problem($"At the date: {date} cyber club not found.");
+                return null;
             }
-            //var gamingPlace = await _gamingPlacesRepository.GetByIdWithCC(gamingPlaceId);
 
-
-            var gamingPlaceDateOrders = await _orderService.GetByDateAndGamingPlace(
+            var gamingPlaceDateOrders = await _orderService.GetByDateAndGamingPlaceAsync(
                 date: date,
                 gamingPlaceId: gamingPlaceId
             );
 
             var unavailableTimeSlots = gamingPlaceDateOrders
-                .Select(o => new TimeSlotDto(o.StartTime, o.EndTime))
-                .OrderBy(ts => ts.StartTime)
+                .Select(o => new TimeSlotDto(o.DateTimeStart, o.DateTimeEnd))
+                .OrderBy(ts => ts.DateTimeStart)
                 .ToList();
 
             return unavailableTimeSlots;
-
         }
 
 
-        public async Task<IEnumerable<TimeSlotDto>> GetAvailableSlotsAsync(GetAvailableTimeSlotsRequest request)
+        public async Task<List<TimeSlotDto>> GetAvailableSlotsAsync(GetAvailableTimeSlotsRequest request)
         {
             return await GetUnAvailableSlotsAsync(
                 request.CyberClubId,

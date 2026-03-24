@@ -1,39 +1,49 @@
 using GNS.Contracts.Requests;
+using GNS.Data.Repositories.Interfaces;
 using GNS.Endpoints.Filters;
+using GNS.Enums;
+using GNS.Extensions;
 using GNS.Services;
 using GNS.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace GNS.Endpoints
 {
     public static class UsersEndpoints
     {
-        public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder app)
+        public static object MapUsersEndpoints(this IEndpointRouteBuilder app)
         {
             var user = app.MapGroup("user")
                 .RequireAuthorization(policy =>
                 {
                     policy.RequireClaim(CustomClaims.UserClaim.Type, CustomClaims.UserClaim.Value);
-                }); ;
+
+                });
 
             user.MapPost("login", Login)
-                .AllowAnonymous()
-                .AddEndpointFilter<UserVerificationFilter>();
+                .AllowAnonymous();
+
+
 
             user.MapPost("register", Register)
                 .AllowAnonymous()
                 .AddEndpointFilter<BloomFilter>()
                 .AddEndpointFilter<FinalValidationFilter>();
-                
+
+            user.MapGet("refresh", Refresh)
+                .AllowAnonymous();
+
             user.MapGet("get-all-clubs", GetAllClubs);
 
             user.MapGet("get-by-city", GetClubsByCity);
             user.MapPost("create-order", CreateOrder);
-
             user.MapGet("get-active-orders", GetActiveOrders);
             user.MapGet("get-time-slots", GetAwailableTimeSlots);
             user.MapGet("get-games-by-flter", GetGamesByFilter);
+
             user.MapDelete("delete-user", DeleteUser);
+
             return app;
         }
         public static async Task<IResult> Register(
@@ -50,20 +60,75 @@ namespace GNS.Endpoints
             IUserService userService,
             HttpContext context
         )
-        { 
+        {
             var response = await userService.Login(request);
-
-            if (context.Request.Cookies.ContainsKey("accessToken"))
+            
+            if (response.Role != Role.User)
             {
-                context.Response.Cookies.Delete("acessToken");
+                return Results.Unauthorized();
             }
-            context.Response.Cookies.Append("accessToken", response.AccessToken);
 
-            if (context.Request.Cookies.ContainsKey("refreshToken"))
+            context.Response.Cookies.Append("accessToken", response.AccessToken, new CookieOptions
             {
-                context.Response.Cookies.Delete("refreshToken");
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict
+            });
+
+            context.Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict
+            });
+            return Results.Ok();
+        }
+        public static async Task<IResult> Refresh(
+            IAuthService service,
+            IRefreshTokensRepository refreshTokensRepository,
+            HttpContext context
+            )
+        {
+            if (!context.Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            {
+                return Results.BadRequest("Invalid cookies");
             }
-            context.Response.Cookies.Append("refreshToken", response.RefreshToken);
+
+            if (!Guid.TryParse(refreshToken, out Guid refreshTokenValue))
+            {
+                return Results.BadRequest("Invalid refreshToken value");
+            }
+
+            var userIdClaim = context.User.Claims.FirstOrDefault(c => c.Type == "Id");
+
+            if (userIdClaim is null)
+            {
+                Console.WriteLine("Cannot find Id claim in token");
+                Results.Problem("userIdClaim is null");
+            }
+            if (!Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                return Results.Problem("userIdClaim.Value has incorrect format");
+            }
+            var verificationResponse = await service.VerifyRefreshToken(refreshToken, userId);
+
+            if (!verificationResponse.IsValid)
+            {
+                return Results.Unauthorized();
+                throw new SecurityTokenExpiredException("Токен протух");
+            }
+
+            var accessToken = await service.GetNewAcessToken(userId);
+            context.Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict
+            });
+
+            context.Response.Cookies.Append("refreshToken", verificationResponse.NewRefreshToken.Token.ToString(), new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict
+            });
+            
             return Results.Ok();
         }
         public static async Task<IResult> GetAwailableTimeSlots(
@@ -94,7 +159,7 @@ namespace GNS.Endpoints
             IOrderService service
         )
         {
-            await service.CreateOrder(request);
+            await service.CreateOrderAsync(request);
             return Results.Ok();
         }
 
@@ -103,7 +168,7 @@ namespace GNS.Endpoints
             IOrderService service
         )
         {
-            var activeOrders = await service.GetActiveOrders();
+            var activeOrders = await service.GetActiveOrdersAsync();
 
             return TypedResults.Ok(activeOrders);
         }

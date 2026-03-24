@@ -13,8 +13,5 @@ namespace GNS.Services.Interfaces
         Task<CyberClubDto> GetById(Guid cyberClubId);
         Task<List<CyberClubDto>> GetByCity(string city);
         Task<List<CyberClubDto>> GetMyCyberClubs();
-        Task Update(UpdateCyberClubRequest request);
-        Task DeleteById(Guid id);
-        Task DeleteByName(string name);
     }
 }

@@ -22,7 +22,7 @@ namespace GNS.Extensions
             services.AddScoped<BloomFilter>();
             services.AddScoped<OwnerVerificationFilter>();
             services.AddScoped<EmployeeVerificationFilter>();
-            services.AddScoped<UserVerificationFilter>();
+
             
 
             return services;

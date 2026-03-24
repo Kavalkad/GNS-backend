@@ -18,12 +18,12 @@ namespace GNS.Data.Repositories.Implementations
         }
 
         // !!!!!!!!!!!!!!!!!
-        public async Task<RefreshTokenEntity> GetByHash(string token)
+        public async Task<RefreshTokenEntity> GetByValue(Guid token)
         {
             return await _dbcontext.RefreshTokens
                 .AsNoTracking()
-                .FirstOrDefaultAsync(rt => rt.Token.ToString() == token)
-                    ?? throw new Exception($"RefreshToken with hash: {token} not found");
+                .FirstOrDefaultAsync(rt => rt.Token == token)
+                    ?? throw new Exception($"RefreshToken with value: {token} not found");
         }
 
         public async Task<List<RefreshTokenEntity>> GetTokensByUserId(Guid userId)
@@ -33,7 +33,7 @@ namespace GNS.Data.Repositories.Implementations
                 .Where(rt => rt.UserId == userId)
                 .ToListAsync();
         }
-        public async Task UpdateRefreshToken(string tokenValue)
+        public async Task RevokeRefreshToken(string tokenValue)
         {
             await _dbcontext.RefreshTokens
                 .Where(rt => rt.Token.ToString() == tokenValue)

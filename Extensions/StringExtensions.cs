@@ -19,9 +19,6 @@ namespace GNS.Extensions
         {
             return name.Any(c => !char.IsLetter(c));
         }
-        public static bool IsNotGuid(this string guid)
-        {
-            return !Guid.TryParse(guid, out Guid result);
-        }
+
     }
 }

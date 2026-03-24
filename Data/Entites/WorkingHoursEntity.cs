@@ -10,6 +10,6 @@ namespace GNS.Data.Entities
         public bool IsOpen { get; set; }
 
         public Guid CyberClubId { get; set; }
-        public CyberClubEntity? CyberClub { get; set; }
+        public List<CyberClubEntity>? CyberClubs { get; set; }
     }
 }

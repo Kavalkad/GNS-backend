@@ -90,7 +90,7 @@ namespace GNS.Services.Implementations
             return new LoginOwnerResponse
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken.ToString()
+                RefreshToken = refreshToken.Token.ToString()
             };
         }
     }

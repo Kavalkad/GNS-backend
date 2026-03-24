@@ -3,9 +3,8 @@ namespace GNS.Data.Entities
 {
     public class OrderEntity : BaseEntity
     {
-        public DateOnly Date { get; set; }
-        public TimeOnly StartTime { get; set; }
-        public TimeOnly EndTime { get; set; }
+        public DateTime DateTimeStart { get; set; }
+        public DateTime DateTimeEnd { get; set; }
 
         public decimal TotalSum { get; set; }
         public OrderStatus OrderStatus { get; set; }

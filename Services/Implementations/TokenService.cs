@@ -16,34 +16,37 @@ namespace GNS.Services.Implementations
     {
         private readonly JwtOptions _jwtOptions;
         private readonly IRefreshTokensRepository _refreshTokensRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public TokensService(
             IOptions<JwtOptions> options,
-            IRefreshTokensRepository refreshTokensRepository
+            IRefreshTokensRepository refreshTokensRepository,
+            IUnitOfWork unitOfWork
             )
         {
             _jwtOptions = options.Value;
             _refreshTokensRepository = refreshTokensRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public string GenerateAccessToken(IClaimsGeneratable entity)
         {
             var claims = ClaimsBuilder.GenerateClaims(entity);
-            var signinngCredentials = new SigningCredentials(
+            var signingCredentials = new SigningCredentials(
                                         new SymmetricSecurityKey(
                                            Encoding.UTF8.GetBytes(_jwtOptions.SecretKey)),
                                         SecurityAlgorithms.HmacSha256
                                         );
+
             var token = new JwtSecurityToken(
                 claims: claims,
-                signingCredentials: signinngCredentials,
+                signingCredentials: signingCredentials,
                 expires: DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenValidityMins)
             );
 
             var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
 
             return tokenValue;
-
         }
 
         public async Task<RefreshTokenEntity> GenerateRefreshToken(Guid userId)
@@ -58,6 +61,8 @@ namespace GNS.Services.Implementations
             };
 
             await _refreshTokensRepository.AddAsync(refreshToken);
+            await _unitOfWork.SaveChangesAsync();
+
             return refreshToken;
         }
         public async Task<List<RefreshTokenEntity>> GetByUserId(Guid userId)
@@ -66,7 +71,8 @@ namespace GNS.Services.Implementations
         }
         public async Task RevokeRefreshToken(string refreshTokenValue)
         {
-           await _refreshTokensRepository.UpdateRefreshToken(refreshTokenValue);
+            await _refreshTokensRepository.RevokeRefreshToken(refreshTokenValue);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

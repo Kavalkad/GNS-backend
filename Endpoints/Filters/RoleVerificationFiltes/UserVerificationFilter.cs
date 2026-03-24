@@ -6,12 +6,12 @@ using GNS.Services.Interfaces;
 
 namespace GNS.Endpoints.Filters
 {
-    public class UserVerificationFilter : IEndpointFilter
+    public class RoleFilter : IEndpointFilter
     {
-        private readonly IUsersRepository _usersRepository;
-        public UserVerificationFilter(IUsersRepository usersRepository)
+        private readonly Role _role;
+        public RoleFilter(Role role)
         {
-            _usersRepository = usersRepository;
+            _role = role;
         }
         
         public async ValueTask<object?> InvokeAsync(
@@ -20,24 +20,20 @@ namespace GNS.Endpoints.Filters
         {
             var userStringId = context.HttpContext.User.FindFirstValue("Id");
 
-            if (Guid.TryParse(userStringId, out Guid userId))
+            if (!Guid.TryParse(userStringId, out Guid userId))
             {
                 return Results.BadRequest("UserId has incorrect format");
             }
-            var user = await _usersRepository.GetById(userId);
+
+            var usersRepository = context.HttpContext.RequestServices.GetRequiredService<IUsersRepository>();
+            var user = await usersRepository.GetByIdAsync(userId);
 
             if (user is null)
             {
                 return Results.BadRequest("User data is not exists");
             }
-            var isUser = user.Role == Role.User;
-
-            if (!isUser)
-            {
-                return Results.Forbid();
-            }
             
-            return await next(context);
+            return user.Role == _role ? await next(context) : Results.Forbid();
         }
     }
 }

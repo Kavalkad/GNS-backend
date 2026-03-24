@@ -17,6 +17,7 @@ namespace GNS.Services.Implementations
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly ICyberClubService _cyberClubService;
+        private readonly ICyberClubsRepository _cyberClubsRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBloomBytesService _bloomBytesService;
 
@@ -26,6 +27,7 @@ namespace GNS.Services.Implementations
             ITokenService tokenService,
             IHttpContextAccessor contextAccessor,
             ICyberClubService cyberClubService,
+            ICyberClubsRepository cyberClubsRepo,
             IUnitOfWork unitOfWork,
             IBloomBytesService bloomBytesService
             )
@@ -35,6 +37,7 @@ namespace GNS.Services.Implementations
             _tokenService = tokenService;
             _contextAccessor = contextAccessor;
             _cyberClubService = cyberClubService;
+            _cyberClubsRepo = cyberClubsRepo;
             _unitOfWork = unitOfWork;
             _bloomBytesService = bloomBytesService;
         }
@@ -42,7 +45,7 @@ namespace GNS.Services.Implementations
         {
             var employee = await _employeesRepository.GetByEmail(request.Email)
                 ?? throw new Exception($"Employee with email {request.Email} not found");
-            
+
 
             bool isFound = _hasher.Verify(request.Password, employee.HashedPassword)
                 && _hasher.Verify(request.SecretWord, employee.HashedSecretWord);
@@ -53,13 +56,13 @@ namespace GNS.Services.Implementations
             }
 
             var accessToken = _tokenService.GenerateAccessToken(employee);
-            var refreshToken =  await _tokenService.GenerateRefreshToken(employee.Id);
+            var refreshToken = await _tokenService.GenerateRefreshToken(employee.Id);
             var role = Enum.GetName(employee.Role);
-            
+
             return new LoginEmployeeResponse
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken.ToString()!,
+                RefreshToken = refreshToken.Token.ToString(),
                 Role = role!
             };
         }
@@ -86,7 +89,7 @@ namespace GNS.Services.Implementations
 
                 var hashedPassword = _hasher.Generate(request.Password);
                 var hashedSecretWord = _hasher.Generate(request.SecretWord);
-                
+
                 var employeeRole = Enum.Parse<Role>(request.RoleName);
 
                 var bloomBytesEntity = new BloomBytesEntity
@@ -94,6 +97,7 @@ namespace GNS.Services.Implementations
                     EmailBytes = _bloomBytesService.GetBytes(request.Email),
                     UserNameBytes = _bloomBytesService.GetBytes(request.UserName)
                 };
+
                 var newEmployee = new EmployeeEntity
                 (
                     email: request.Email,
@@ -162,8 +166,7 @@ namespace GNS.Services.Implementations
         }
         public async Task<List<EmployeeDto>> GetByCCName(string cyberClubName)
         {
-            var employees = await _employeesRepository.GetByCyberClubName(cyberClubName)
-                ;
+            var employees = await _employeesRepository.GetByCyberClubName(cyberClubName);
 
             return employees
                 .Select(e => new EmployeeDto(e))
@@ -172,20 +175,83 @@ namespace GNS.Services.Implementations
         public async Task<EmployeeDto> GetByNames(string firstName, string lastName)
         {
             var employee = await _employeesRepository.GetByNames(firstName, lastName);
+
             return new EmployeeDto(employee);
         }
-        public async Task UpdateEmployee(UpdateEmployeeRequest request)
+        public async Task UpdateEmployeeFirstNameAsync(
+            UpdateEmployeeNameRequest request,
+            CancellationToken token = default
+        )
         {
-            var newSalary = request.NewSalary ?? 0;
-            await _employeesRepository.UpdateEmployee(
-                request.FirstName,
-                request.LastName,
-                request.NewFirstName,
-                request.NewLastName,
-                newSalary,
-                request.NewRoleName,
-                request.NewCyberClubName
-            );
+            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
+            {
+                throw new Exception("Invalid Id value");
+            }
+
+            await _employeesRepository.Update(
+                employeeId: employeeId,
+                newFirstName: request.NewNameValue,
+                token: token
+                );
+            await _unitOfWork.SaveChangesAsync(token);
+        }
+        public async Task UpdateEmployeeLastNameAsync(
+            UpdateEmployeeNameRequest request,
+            CancellationToken token = default
+        )
+        {
+            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
+            {
+                throw new Exception("Invalid Id value");
+            }
+
+            await _employeesRepository.Update(
+                employeeId: employeeId,
+                newLastName: request.NewNameValue,
+                token: token
+                );
+            await _unitOfWork.SaveChangesAsync(token);
+        }
+        public async Task UpdateEmployeeRoleNameAsync(
+            UpdateEmployeeNameRequest request,
+            CancellationToken token = default
+        )
+        {
+            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
+            {
+                throw new Exception("Invalid Id value");
+            }
+            if (!Enum.TryParse(request.NewNameValue, out Role role))
+            {
+                throw new Exception("Incorrect role name");
+            }
+
+            await _employeesRepository.Update(
+                employeeId: employeeId,
+                newRole: role,
+                token: token
+                );
+            await _unitOfWork.SaveChangesAsync(token);
+        }
+        public async Task UpdateEmployeeCyberClubNameAsync(
+            UpdateEmployeeNameRequest request,
+            CancellationToken token = default
+        )
+        {
+            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
+            {
+                throw new Exception("Invalid Id value");
+            }
+
+            var cyberClub = await _cyberClubsRepo.GetByCCName(request.NewNameValue)
+                ?? throw new Exception($"CyberClub with name:{request.NewNameValue} not found");
+                
+            await _employeesRepository.Update(
+                employeeId: employeeId,
+                newCyberClubId: cyberClub.Id,
+                token: token
+                );
+            await _unitOfWork.SaveChangesAsync(token);
         }
         public async Task SetZeroBonuses()
         {
@@ -212,6 +278,7 @@ namespace GNS.Services.Implementations
                 request.LastName,
                 request.Bonus
                 );
+            await _unitOfWork.SaveChangesAsync();
         }
         public async Task GivePenalty(GivePenaltyRequest request)
         {
@@ -225,6 +292,7 @@ namespace GNS.Services.Implementations
                 request.Penalty
                 );
 
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

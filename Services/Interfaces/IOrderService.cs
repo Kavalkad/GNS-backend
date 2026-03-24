@@ -6,13 +6,20 @@ namespace GNS.Services.Interfaces
 {
     public interface IOrderService
     {
-        Task CreateOrder(CreateOrderRequest requset);
-        Task<List<OrderDto>> GetActiveOrders();
-        Task<IEnumerable<OrderEntity>> GetByDateAndGamingPlace(DateOnly date, Guid gamingPlaceId);
-        Task<List<OrderDto>> GetTodaysOrders();
-        Task<List<OrderDto>> GetByUserEmail(string email);
-        Task<List<OrderDto>> GetByUserName(string userName);
-        Task UpdateOrderStatus(Guid orderId, string status);
+        Task<TimeSlotDto> CreateOrderAsync(CreateOrderRequest request, CancellationToken token = default);
+        Task<List<OrderDto>> GetActiveOrdersAsync(CancellationToken token = default);
+        Task<List<OrderEntity>> GetByDateAndGamingPlaceAsync(
+            DateTime date,
+            Guid gamingPlaceId,
+            CancellationToken token = default
+            );
+        Task<List<OrderDto>> GetTodaysOrdersAsync(CancellationToken token = default);
+        Task<List<OrderDto>> GetByUserEmailAsync(string email, CancellationToken token = default);
+        Task<List<OrderDto>> GetByUserNameAsync(string userName, CancellationToken token = default);
+        Task UpdateOrderStatusAsync(
+            Guid orderId,
+            string status,
+            CancellationToken token = default);
        
     }
 }

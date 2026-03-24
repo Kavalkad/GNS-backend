@@ -45,7 +45,7 @@ namespace GNS.Endpoints
             IOrderService service
         )
         {
-            var orders = await service.GetTodaysOrders();
+            var orders = await service.GetTodaysOrdersAsync();
 
             return TypedResults.Ok(orders);
         }
@@ -55,7 +55,7 @@ namespace GNS.Endpoints
             IOrderService service
         )
         {
-            var orders = await service.GetByUserEmail(email);
+            var orders = await service.GetByUserEmailAsync(email);
             return TypedResults.Ok(orders);
         }
         public static async Task<IResult> GetOrdersByUserName(
@@ -63,7 +63,7 @@ namespace GNS.Endpoints
             IOrderService service
         )
         {
-            var orders = await service.GetByUserName(userName);
+            var orders = await service.GetByUserNameAsync(userName);
             return TypedResults.Ok(orders);
         }
 
@@ -72,7 +72,7 @@ namespace GNS.Endpoints
             IOrderService service
         )
         {
-            await service.UpdateOrderStatus(request.OrderId, request.NewOrderStatus);
+            await service.UpdateOrderStatusAsync(request.OrderId, request.NewOrderStatus);
 
             return Results.Ok($"Order status is successfully changed on {request.NewOrderStatus}");
         }

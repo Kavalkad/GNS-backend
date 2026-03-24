@@ -1,4 +1,5 @@
 using GNS.Data;
+using GNS.Data.Entities;
 using GNS.Services.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -21,6 +22,7 @@ namespace GNS.Services.Implementations
         {
             await _dbcontext.SaveChangesAsync(cancellationToken);
         }
+        
 
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
@@ -77,7 +79,7 @@ namespace GNS.Services.Implementations
             }
         }
 
-        
+
         public async ValueTask DisposeAsync()
         {
             if (HasActiveTransaction)

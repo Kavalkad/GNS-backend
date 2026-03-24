@@ -1,4 +1,5 @@
 using GNS.Data.Entities;
+using GNS.Enums;
 
 
 namespace GNS.Data.Repositories.Interfaces
@@ -12,14 +13,17 @@ namespace GNS.Data.Repositories.Interfaces
         Task<List<EmployeeEntity>> GetByCyberClubId(Guid ccId);
         Task<List<EmployeeEntity>> GetByCyberClubName(string cyberClubName);
         Task<List<EmployeeEntity>> GetAllEmployeesAsync();
-        Task UpdateEmployee(string firstName,
-            string lastName,
-            string newFirstName,
-            string newLastName,
-            decimal newSalary,
-            string newRoleName,
-            string newCyberClubName
-        );
+        Task Update(
+            Guid employeeId,
+            string? newFirstName = default,
+            string? newLastName = default,
+            decimal? newSalary = default,
+            decimal bonus = 0,
+            decimal penalty = 0,
+            Role newRole = default,
+            Guid newCyberClubId = default,
+            CancellationToken token = default
+            );
         Task DeleteById(Guid id);
         Task Delete(string firstName, string lastName);
 

@@ -12,8 +12,7 @@ namespace GNS.Endpoints
         {
             var employee = app.MapGroup("employee");
             employee.MapPost("login", Login)
-                .AllowAnonymous()
-                .AddEndpointFilter<EmployeeVerificationFilter>();
+                .AllowAnonymous();
                 
             employee.MapAdminEndpoints();
             employee.MapManagerEndpoints();
@@ -27,10 +26,10 @@ namespace GNS.Endpoints
             )
         {
             var response = await employeeService.Login(request);
-
+        
             if (context.Request.Cookies.ContainsKey("accessToken"))
             {
-                context.Response.Cookies.Delete("acessToken");
+                context.Response.Cookies.Delete("accessToken");
             }
             context.Response.Cookies.Append("accessToken", response.AccessToken);
 
@@ -39,6 +38,7 @@ namespace GNS.Endpoints
                 context.Response.Cookies.Delete("refreshToken");
             }
             context.Response.Cookies.Append("refreshToken", response.RefreshToken);
+            
             return Results.Ok();
         }
     }

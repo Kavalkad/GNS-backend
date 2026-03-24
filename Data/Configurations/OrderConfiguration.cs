@@ -10,8 +10,6 @@ namespace GNS.Data.Configurations
         {
             builder.HasKey(o => o.Id);
 
-
-          
                 
 
             builder

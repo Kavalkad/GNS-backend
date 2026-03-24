@@ -4,7 +4,6 @@ namespace GNS.Data.Entities
 {
     public class GamingPlaceEntity : BaseEntity
     {
-
         public int Number { get; set; }
         public decimal PricePerHour { get; set; }
         public Equipment Equipment { get; set; }

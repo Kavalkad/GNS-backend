@@ -16,7 +16,22 @@ namespace GNS.Services.Interfaces
         Task<List<EmployeeDto>> GetWithPenalty();
         Task<List<EmployeeDto>> GetByCCId(Guid cyberClubId);
         Task<List<EmployeeDto>> GetByCCName(string cyberClubName);
-        Task UpdateEmployee(UpdateEmployeeRequest request);
+        Task UpdateEmployeeFirstNameAsync(
+            UpdateEmployeeNameRequest request,
+            CancellationToken token = default
+        );
+        Task UpdateEmployeeLastNameAsync(
+            UpdateEmployeeNameRequest request,
+            CancellationToken token = default
+        );
+        Task UpdateEmployeeRoleNameAsync(
+            UpdateEmployeeNameRequest request,
+            CancellationToken token = default
+        );
+        Task UpdateEmployeeCyberClubNameAsync(
+            UpdateEmployeeNameRequest request,
+            CancellationToken token = default
+        );
         Task Delete(DeleteEmployeeRequest request);
         Task SetZeroBonuses();
         Task SetZeroPenalties();

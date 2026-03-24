@@ -1,12 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using GNS.Dto;
 
 namespace GNS.Contracts.Responses
 {
-    public record class LoginOwnerResponse : LoginResponse
+    public record class LoginOwnerResponse : LoginUserResponse
     {
-        /*
-        [Required] public string AccessToken { get; set; } = string.Empty;
-        [Required] public string RefreshToken { get; set; } = string.Empty;
-        */
+        [Required] public ICollection<CyberClubDto> CyberClubs { get; set; } = [];
     }
 }

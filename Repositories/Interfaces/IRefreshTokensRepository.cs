@@ -5,8 +5,8 @@ namespace GNS.Data.Repositories.Interfaces
     public interface IRefreshTokensRepository
     {
         Task AddAsync(RefreshTokenEntity refreshToken);
-        Task<RefreshTokenEntity> GetByHash(string tokenHash);
+        Task<RefreshTokenEntity> GetByValue(Guid token);
         Task<List<RefreshTokenEntity>> GetTokensByUserId(Guid userId);
-        Task UpdateRefreshToken(string tokenValue);
+        Task RevokeRefreshToken(string tokenValue);
     }
 }

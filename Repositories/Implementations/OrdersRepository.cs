@@ -17,48 +17,49 @@ namespace GNS.Data.Repositories.Implementations
         public async Task CreateOrderAsync(
             Guid userId,
             Guid gamingPlaceId,
-            DateOnly date,
-            TimeOnly startTime,
-            TimeOnly endTime)
+            DateTime startTime,
+            DateTime endTime,
+            CancellationToken token = default)
         {
             var order = new OrderEntity
             {
                 UserId = userId,
                 GamingPlaceId = gamingPlaceId,
-                Date = date,
-                StartTime = startTime,
-                EndTime = endTime,
+                DateTimeStart = startTime,
+                DateTimeEnd = endTime,
                 OrderStatus = OrderStatus.Booked
             };
-            await _dbcontext.Orders.AddAsync(order);
+            await _dbcontext.Orders.AddAsync(order, token);
 
         }
 
-        public async Task<List<OrderEntity>> GetByDate(DateOnly date)
+        public async Task<List<OrderEntity>> GetByDateAsync(DateTime date, CancellationToken token = default)
         {
+
             return await _dbcontext.Orders
                 .AsNoTracking()
-                .Where(o => o.Date == date)
+                .Where(o => o.DateTimeStart.Date == date)
                 .ToListAsync();
         }
 
-        public Task<OrderEntity> GetById(Guid orderId)
+        public Task<OrderEntity> GetByIdAsync(Guid orderId, CancellationToken token = default)
         {
+            ///!!!!!!!!!!!!!!
             throw new NotImplementedException();
         }
 
-        public async Task<List<OrderEntity>> GetByUserId(Guid userId)
+        public async Task<List<OrderEntity>> GetByUserIdAsync(Guid userId, CancellationToken token = default)
         {
             return await _dbcontext.Orders
                 .Where(o => o.UserId == userId)
                 .Include(o => o.GamingPlace)
-                .Include(gp => gp.GamingPlace.CyberClub)
+                .Include(o => o.GamingPlace.CyberClub)
                 .ToListAsync();
         }
 
-        public async Task<List<OrderEntity>> GetDateOrdersOfGamingPlace(
+        public async Task<List<OrderEntity>> GetOrdersOfGamingPlaceByDateAsync(
             Guid gamingPlaceId,
-            DateOnly date,
+            DateTime date,
             CancellationToken token = default)
         {
             return await _dbcontext.GamingPlaces
@@ -66,19 +67,18 @@ namespace GNS.Data.Repositories.Implementations
                 .Where(gp => gp.Id == gamingPlaceId)
                 .Include(gp => gp.Orders)
                 .SelectMany(gp => gp.Orders)
-                .Where(o => o.Date == date)
+                .Where(o => o.DateTimeStart.Date == date)
                 .ToListAsync(token);
         }
 
-        public async Task UpdateStatus(Guid orderId, string statusName)
+        public async Task UpdateStatusAsync(Guid orderId, OrderStatus status, CancellationToken token = default)
         {
-            var orderStatus = Enum.Parse<OrderStatus>(statusName);
 
             await _dbcontext.Orders
                 .Where(o => o.Id == orderId)
                 .ExecuteUpdateAsync(ub =>
                 {
-                    ub.SetProperty(o => o.OrderStatus, orderStatus);
+                    ub.SetProperty(o => o.OrderStatus, status);
                 });
         }
         

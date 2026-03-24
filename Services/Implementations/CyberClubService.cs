@@ -28,17 +28,17 @@ namespace GNS.Services.Implementations
 
         public async Task Add(AddCyberClubRequest request)
         {
-                var ownerId = _contextAccessor.TryGetHttpUserId();
-                var cyberClubEntity = new CyberClubEntity
-                {
-                    Name = request.Name,
-                    City = request.City,
-                    Address = request.Address,
-                    OwnerId = ownerId
-                };
+            var ownerId = _contextAccessor.TryGetHttpUserId();
+            var cyberClubEntity = new CyberClubEntity
+            {
+                Name = request.Name,
+                City = request.City,
+                Address = request.Address,
+                OwnerId = ownerId
+            };
 
-                await _cyberClubsRepository.Add(cyberClubEntity);
-                await _unitOfWork.SaveChangesAsync();      
+            await _cyberClubsRepository.Add(cyberClubEntity);
+            await _unitOfWork.SaveChangesAsync();
 
         }
         public async Task<bool> VerifyOwner(Guid ownerId, string cyberClubName)
@@ -58,12 +58,12 @@ namespace GNS.Services.Implementations
         }
         public async Task<CyberClubDto> GetById(Guid cyberClubId)
         {
-            var cyberClub = await _cyberClubsRepository.GetById(cyberClubId) ?? throw new Exception("CyberClub not found");
+            var cyberClub = await _cyberClubsRepository.GetById(cyberClubId)
+                ?? throw new Exception("CyberClub not found");
             return new CyberClubDto(cyberClub);
         }
         public async Task<CyberClubEntity> GetByCCName(string cyberClubName)
         {
-
             return await _cyberClubsRepository.GetByCCName(cyberClubName);
         }
         public async Task<List<CyberClubDto>> GetByCity(string city)
@@ -76,33 +76,18 @@ namespace GNS.Services.Implementations
         public async Task<List<CyberClubDto>> GetMyCyberClubs()
         {
             var ownerId = _contextAccessor.TryGetHttpUserId();
+
             bool isOwner = await _ownersRepository.ContainsOwnerId(ownerId);
+
             if (!isOwner)
             {
                 throw new Exception("User doesn't owe any CyberClub");
             }
-            var cyberClubEntities = await _cyberClubsRepository.GetByOwnerId(ownerId);
-            return cyberClubEntities
+
+            var cyberClubs = await _cyberClubsRepository.GetByOwnerId(ownerId);
+            return cyberClubs
                 .Select(cc => new CyberClubDto(cc))
                 .ToList();
-        }
-        public async Task Update(UpdateCyberClubRequest request)
-        {
-            await _cyberClubsRepository.Update(
-                    request.Name,
-                    request.NewName,
-                    request.NewCity,
-                    request.NewAddress
-                    );
-        }
-
-        public async Task DeleteById(Guid id)
-        {
-            await _cyberClubsRepository.DeleteById(id);
-        }
-        public async Task DeleteByName(string name)
-        {
-            await _cyberClubsRepository.DeleteByName(name);
         }
 
 

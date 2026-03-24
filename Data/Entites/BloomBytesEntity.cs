@@ -5,7 +5,7 @@ namespace GNS.Data.Entities
         public byte[] EmailBytes { get; set; } = [];
         public byte[] UserNameBytes { get; set; } = [];
 
-        
+
         public ICollection<UserEntity> Users { get; set; } = [];
     }
 }

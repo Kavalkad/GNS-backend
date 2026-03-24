@@ -22,8 +22,8 @@ namespace GNS.Endpoints
                 .AddEndpointFilter<FinalValidationFilter>();
 
             owner.MapPost("login", Login)
-                .AllowAnonymous()
-                .AddEndpointFilter<OwnerVerificationFilter>();
+                .AllowAnonymous();
+
 
             var workingHours = owner.MapGroup("working-hours");
             workingHours.MapPost("add", AddWorkingHours);
@@ -45,11 +45,28 @@ namespace GNS.Endpoints
             employees.MapPost("add", AddEmployee)
                 .AddEndpointFilter<BloomFilter>()
                 .AddEndpointFilter<FinalValidationFilter>();
-            employees.MapGet("get-by-ccid", GetCyberClubEmployeesByCCId);
-            employees.MapGet("get-all", GetAllEmployees);
-            employees.MapGet("get-with-bonus", GetEmployeesWithBonus);
-            employees.MapGet("get-with-penalty", GetEmployeesWithPenalty);
-            employees.MapPut("update", UpdateEmployee);
+
+            var empGet = employees.MapGroup("get");
+            empGet.MapGet("by-ccid", GetCyberClubEmployeesByCCId);
+            empGet.MapGet("all", GetAllEmployees);
+            empGet.MapGet("with-bonus", GetEmployeesWithBonus);
+            empGet.MapGet("with-penalty", GetEmployeesWithPenalty);
+
+            var empUpdate = employees.MapGroup("update");
+
+            empUpdate.MapPut("firstname", UpdateEmployeeFirstName)
+                .AddEndpointFilter<VerifyNameFilter>()
+                .AddEndpointFilter<FinalValidationFilter>();
+            empUpdate.MapPut("lastname", UpdateEmployeeLastName)
+                .AddEndpointFilter<VerifyNameFilter>()
+                .AddEndpointFilter<FinalValidationFilter>();
+            empUpdate.MapPut("rolename", UpdateEmployeeRoleName)
+                .AddEndpointFilter<VerifyNameFilter>()
+                .AddEndpointFilter<FinalValidationFilter>();
+            empUpdate.MapPut("cyberclub-name", UpdateEmployeeCyberClubName)
+                .AddEndpointFilter<VerifyNameFilter>()
+                .AddEndpointFilter<FinalValidationFilter>();
+
             employees.MapDelete("delete", DeleteEmployee);
 
             var gamingPlaces = owner.MapGroup("gaming-places");
@@ -85,7 +102,7 @@ namespace GNS.Endpoints
 
             if (context.Request.Cookies.ContainsKey("accessToken"))
             {
-                context.Response.Cookies.Delete("acessToken");
+                context.Response.Cookies.Delete("accessToken");
             }
             context.Response.Cookies.Append("accessToken", response.AccessToken);
 
@@ -183,7 +200,8 @@ namespace GNS.Endpoints
             )
         {
             await cyberClubService.DeleteById(cyberClubId);
-            return Results.Ok($"CyberClub with id: {cyberClubId} had deleted");
+
+            return Results.Ok($"CyberClub with id: {cyberClubId} was successfully deleted");
         }
         public static async Task<IResult> DeleteClubByName(
             string name,
@@ -191,6 +209,7 @@ namespace GNS.Endpoints
             )
         {
             await cyberClubService.DeleteByName(name);
+
             return Results.Ok($"CyberClub with name: {name} had deleted");
         }
         #endregion CyberClubs Operations
@@ -235,15 +254,43 @@ namespace GNS.Endpoints
             return TypedResults.Ok(employeesWithPenalty);
         }
 
-        public static async Task<IResult> UpdateEmployee(
-            [FromBody] UpdateEmployeeRequest request,
+
+        public static async Task<IResult> UpdateEmployeeFirstName(
+            [FromBody] UpdateEmployeeNameRequest request,
             IEmployeeService employeeService
             )
         {
-            await employeeService.UpdateEmployee(request);
-            return Results.Ok("Employee successfully updated");
-        }
+            await employeeService.UpdateEmployeeFirstNameAsync(request);
 
+            return Results.Ok($"Employee's firstname successfully changed on {request.NewNameValue}");
+        }
+        public static async Task<IResult> UpdateEmployeeLastName(
+            [FromBody] UpdateEmployeeNameRequest request,
+            IEmployeeService employeeService
+            )
+        {
+            await employeeService.UpdateEmployeeLastNameAsync(request);
+
+            return Results.Ok($"Employee's lastname successfully changed on {request.NewNameValue}");
+        }
+        public static async Task<IResult> UpdateEmployeeRoleName(
+            [FromBody] UpdateEmployeeNameRequest request,
+            IEmployeeService employeeService
+            )
+        {
+            await employeeService.UpdateEmployeeRoleNameAsync(request);
+
+            return Results.Ok($"Employee's role successfully changed on {request.NewNameValue}");
+        }
+        public static async Task<IResult> UpdateEmployeeCyberClubName(
+            [FromBody] UpdateEmployeeNameRequest request,
+            IEmployeeService employeeService
+            )
+        {
+            await employeeService.UpdateEmployeeLastNameAsync(request);
+
+            return Results.Ok($"Employee was successfully moved to cyberclub with name: {request.NewNameValue}");
+        }
         public static async Task<IResult> DeleteEmployee(
             [FromBody] DeleteEmployeeRequest request,
             IEmployeeService employeeService

@@ -15,33 +15,33 @@ namespace GNS.Data.Repositories.Implementations
         
         public async Task AddUserAsync(UserEntity userEntity, CancellationToken token = default)
         {
-            await _dbcontext.Users.AddAsync(userEntity);
+            await _dbcontext.Users.AddAsync(userEntity, token);
         }
-        public async Task DeleteByIdAsync(Guid id)
+        public async Task DeleteByIdAsync(Guid id, CancellationToken token = default)
         {
             await _dbcontext.Users
                 .Where(u => u.Id == id)
-                .ExecuteDeleteAsync();
+                .ExecuteDeleteAsync(token);
         }
-        public async Task<UserEntity?> GetById(Guid userId)
+        public async Task<UserEntity?> GetByIdAsync(Guid userId, CancellationToken token = default)
         {
             return await _dbcontext.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == userId);
+                .FirstOrDefaultAsync(u => u.Id == userId, token);
                     
         }
-        public async Task<UserEntity?> GetByEmailAsync(string email)
+        public async Task<UserEntity?> GetByEmailAsync(string email, CancellationToken token = default)
         {
             return await _dbcontext.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == email)
+                .FirstOrDefaultAsync(u => u.Email == email, token)
                     ?? throw new Exception($"User with email: {email} not found");
         }
-        public async Task<UserEntity?> GetByUserNameAsync(string userName)
+        public async Task<UserEntity?> GetByUserNameAsync(string userName, CancellationToken token = default)
         {
             return await _dbcontext.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.UserName == userName)
+                .FirstOrDefaultAsync(u => u.UserName == userName, token)
                     ?? throw new Exception($"User witn Username {userName} not found");
         }
         public async Task<bool> ContainsEmail(string email)

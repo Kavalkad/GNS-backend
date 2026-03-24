@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,7 +28,27 @@ services.AddScopedReposiotries();
 services.AddScopedServices();
 services.AddHostedServices();
 services.AddEndpointsApiExplorer();
-services.AddSwaggerGen();
+services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "GNS API",
+        Version = "v1",
+        Description = "API с поддержкой JWT авторизации"
+    });
+
+    // Добавление определения безопасности
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Введите JWT токен в формате: Bearer {your_token}"
+    });
+}
+);
 services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -51,7 +72,7 @@ builder.Host.UseDefaultServiceProvider(options =>
 
 
 services.AddApiAuthentication(configuration);
-services.AddAuthorization();
+
 
 var app = builder.Build();
 
@@ -61,7 +82,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseMiddleware<CustomExceptionMiddleware>();
+
+
 app.UseCors();
 app.UseCookiePolicy(new CookiePolicyOptions
 {
@@ -69,12 +91,15 @@ app.UseCookiePolicy(new CookiePolicyOptions
     HttpOnly = HttpOnlyPolicy.Always,
     Secure = CookieSecurePolicy.Always
 });
+
+app.UseMiddlewares();
+
+app.UseAuthentication();
 app.UseAuthorization();
-
-
 
 app.MapUsersEndpoints();
 app.MapOwnerEndpoints();
 app.MapEmployeeEndpoints();
 
 app.Run();
+

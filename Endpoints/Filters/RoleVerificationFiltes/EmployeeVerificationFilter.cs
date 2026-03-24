@@ -7,14 +7,10 @@ namespace GNS.Endpoints.Filters
 {
     public class EmployeeVerificationFilter : IEndpointFilter
     {
-        private readonly IVerificationService _verificationService;
+
         private readonly IEmployeesRepository _employeesRepository;
-        public EmployeeVerificationFilter(
-            IVerificationService verificationService,
-            IEmployeesRepository employeesRepository
-            )
+        public EmployeeVerificationFilter(IEmployeesRepository employeesRepository)
         {
-            _verificationService = verificationService;
             _employeesRepository = employeesRepository;
         }
         

@@ -4,12 +4,12 @@ using GNS.Services.Interfaces;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Contracts.Requests;
 using GNS.Data.Entities;
+using GNS.Enums;
 
 namespace GNS.Services.Implementations
 {
     public class OrderService : IOrderService
     {
-
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IOrdersRepository _ordersRepository;
         private readonly IGamingPlacesRepository _gamingPlacesRepository;
@@ -17,7 +17,6 @@ namespace GNS.Services.Implementations
         private readonly IUnitOfWork _unitOfWork;
 
         public OrderService(
-
             IHttpContextAccessor contextAccessor,
             IOrdersRepository ordersRepository,
             IGamingPlacesRepository gamingPlacesRepository,
@@ -25,120 +24,115 @@ namespace GNS.Services.Implementations
             IUnitOfWork unitOfWork
 )
         {
-
             _contextAccessor = contextAccessor;
             _ordersRepository = ordersRepository;
             _gamingPlacesRepository = gamingPlacesRepository;
             _usersRepository = usersRepository;
             _unitOfWork = unitOfWork;
         }
-        public async Task CreateOrder(CreateOrderRequest request)
+        public async Task<TimeSlotDto> CreateOrderAsync(CreateOrderRequest request, CancellationToken token = default)
         {
 
             if (!DateTime.TryParse(request.DateTimeStart, out DateTime dtStart))
             {
-                Results.BadRequest();
-                return;
+                throw new Exception("Invalid start time value");
             }
+
             if (!DateTime.TryParse(request.DateTimeEnd, out DateTime dtEnd))
             {
-                Results.BadRequest();
-                return;
+                throw new Exception("Invalid end time value");
+            }
+
+            if (dtStart - dtEnd != TimeSpan.FromHours(1))
+            {
+                throw new Exception("You can order only 1 hour");
             }
 
             var userId = _contextAccessor.TryGetHttpUserId();
-            var gamingPlaceWithCC = await _gamingPlacesRepository.GetByIdWithCC(request.GamingPlaceId);
-            var date = DateOnly.FromDateTime(dtStart);
-            //var duration = TimeSpan.FromHours(request.Duration);
 
-            /*    var unAvailableTimeSlots = await _timeSlotsService.GetUnAvailableSlotsAsync(
-                    cyberClubId: gamingPlaceWithCC.CyberClubId,
-                    gamingPlaceId: gamingPlaceWithCC.Id,
-                    date: date);
-            */
-            var requiredTimeSlot = new TimeSlotDto
-            (
-                TimeOnly.FromDateTime(dtStart),
-                TimeOnly.FromDateTime(dtEnd)
-            //TimeOnly.FromDateTime(dt).Add(duration)
-            );
-            /*    if (unAvailableTimeSlots.Contains(requiredTimeSlot))
-                 {
-                     Results.Conflict("Required time is not available.");
-                 }
-                 */
+           
             await _ordersRepository.CreateOrderAsync(
                 userId,
                 request.GamingPlaceId,
-                date,
-                TimeOnly.FromDateTime(dtStart),
-                TimeOnly.FromDateTime(dtEnd)
+                dtStart,
+                dtEnd,
+                token
             );
-            await _unitOfWork.SaveChangesAsync();
-            TypedResults.Ok(requiredTimeSlot);
-            return;
+            await _unitOfWork.SaveChangesAsync(token);
+
+            var requiredTimeSlotDto = new TimeSlotDto
+            (
+                dtStart,
+                dtEnd
+            );
+            return requiredTimeSlotDto;
         }
-        public async Task<IEnumerable<OrderEntity>> GetByDateAndGamingPlace(DateOnly date, Guid gamingPlaceId)
+        public async Task<List<OrderEntity>> GetByDateAndGamingPlaceAsync(
+            DateTime date,
+            Guid gamingPlaceId,
+            CancellationToken token = default)
         {
-            var gamingPlaceDateOrders = await _ordersRepository.GetByDate(date);
-            return gamingPlaceDateOrders.Where(o => o.GamingPlaceId == gamingPlaceId);
+            var gamingPlaceDateOrders = await _ordersRepository.GetByDateAsync(date, token);
+
+            return gamingPlaceDateOrders.Where(o => o.GamingPlaceId == gamingPlaceId).ToList();
         }
-        public async Task<List<OrderDto>> GetActiveOrders()
+        public async Task<List<OrderDto>> GetActiveOrdersAsync(CancellationToken token = default)
         {
             var id = _contextAccessor.TryGetHttpUserId();
-            var activeOrders = await _ordersRepository.GetByUserId(id);
+            var activeOrders = await _ordersRepository.GetByUserIdAsync(id, token);
 
             return activeOrders
-                .OrderByDescending(ao => ao.Date)
-                .ThenByDescending(ao => ao.StartTime)
+                .OrderByDescending(ao => ao.DateTimeStart)
                 .Select(ao => new OrderDto(ao))
                 .ToList();
 
         }
 
-        public async Task<List<OrderDto>> GetByUserEmail(string email)
+        public async Task<List<OrderDto>> GetByUserEmailAsync(string email, CancellationToken token = default)
         {
             var user = await _usersRepository.GetByEmailAsync(email)
                 ?? throw new Exception($"User with email {email} not found");
 
             var userId = user.Id;
-            var userOrders = await _ordersRepository.GetByUserId(userId);
+            var userOrders = await _ordersRepository.GetByUserIdAsync(userId, token);
 
             return userOrders
                 .OrderBy(o => o.OrderStatus)
-                .ThenBy(o => o.Date)
-                .ThenBy(o => o.StartTime)
+                .ThenBy(o => o.DateTimeStart)
                 .Select(o => new OrderDto(o))
                 .ToList();
         }
-        public async Task<List<OrderDto>> GetByUserName(string userName)
+        public async Task<List<OrderDto>> GetByUserNameAsync(string userName, CancellationToken token = default)
         {
-            var user = await _usersRepository.GetByUserNameAsync(userName)
+            var user = await _usersRepository.GetByUserNameAsync(userName, token)
                 ?? throw new Exception($"User with UserName {userName} not found");
 
             var userId = user.Id;
-            var userOrders = await _ordersRepository.GetByUserId(userId);
+            var userOrders = await _ordersRepository.GetByUserIdAsync(userId);
 
             return userOrders
                 .OrderBy(o => o.OrderStatus)
-                .ThenBy(o => o.Date)
-                .ThenBy(o => o.StartTime)
+                .ThenBy(o => o.DateTimeStart)
                 .Select(o => new OrderDto(o))
                 .ToList();
         }
 
-        public async Task<List<OrderDto>> GetTodaysOrders()
+        public async Task<List<OrderDto>> GetTodaysOrdersAsync(CancellationToken token = default)
         {
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            var todayOrders = await _ordersRepository.GetByDate(today);
+            var today = DateTime.Now;
+            var todayOrders = await _ordersRepository.GetByDateAsync(today, token);
             return todayOrders
-                .OrderBy(td => td.StartTime)
+                .OrderBy(td => td.DateTimeStart)
                 .Select(o => new OrderDto(o))
                 .ToList();
         }
-        public async Task UpdateOrderStatus(Guid orderId, string status)
+        public async Task UpdateOrderStatusAsync(Guid orderId, string status, CancellationToken token = default)
         {
-            await _ordersRepository.UpdateStatus(orderId, status);
+            if (Enum.TryParse(status, out OrderStatus orderStatus))
+            {
+                throw new Exception("Invalid order status name");
+            }
+            await _ordersRepository.UpdateStatusAsync(orderId, orderStatus, token);
         }
 
     }

@@ -1,10 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using GNS.Enums;
+
 namespace GNS.Contracts.Responses
 {
-    public record class LoginUserResponse
+    public record class LoginUserResponse : LoginResponse
     {
-        public string UserName { get; set; } = null!;
-        public string AccessToken { get; set; } = null!;
-       // public int ExpiredIn { get; set; }
-        public string RefreshToken { get; set; } = null!;
+        [Required] public string UserName { get; set; } = null!;
+        [Required] public virtual Role Role { get; } = Role.User; 
     }
 }

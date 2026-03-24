@@ -1,6 +1,8 @@
 using GNS.Services;
+using GNS.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace GNS.Extensions
@@ -9,8 +11,9 @@ namespace GNS.Extensions
     {
 
         public static void AddApiAuthentication(
-                this IServiceCollection services,
-                IConfiguration configuration)
+            this IServiceCollection services,
+            IConfiguration configuration
+            )
         {
             var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
 
@@ -23,29 +26,33 @@ namespace GNS.Extensions
                 .AddJwtBearer(options =>
                 {
                     options.SaveToken = true;
-                     
+
                     options.TokenValidationParameters = new()
                     {
                         ValidateIssuer = jwtOptions!.ValidateIssuer,
                         ValidateAudience = jwtOptions.ValidateAudience,
-                        ValidateLifetime = jwtOptions.ValidateLifetime,
+                        ValidateLifetime = true,
                         ValidateIssuerSigningKey = jwtOptions.ValidateIssuerSigningKey,
+                        RequireExpirationTime = true,
+                        ClockSkew = TimeSpan.Zero,
                         IssuerSigningKey = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
                     };
+
                     options.Events = new JwtBearerEvents
                     {
-                        OnMessageReceived = context =>
+                        OnMessageReceived = (context) =>
                         {
                             context.Token = context.Request.Cookies["accessToken"];
 
                             return Task.CompletedTask;
-                        }
+                        } 
 
                     };
 
                 }
             );
+            services.AddAuthorization();
         }
     }
 }
