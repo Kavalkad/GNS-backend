@@ -18,9 +18,10 @@ namespace GNS.Endpoints.Filters
             EndpointFilterInvocationContext context,
             EndpointFilterDelegate next)
         {
-            var employeeStringId = context.HttpContext.User.FindFirstValue("Id");
+            var employeeStringId = context.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "Id")
+                    ?? throw new Exception("Failed to read id claim");
 
-            if (Guid.TryParse(employeeStringId, out Guid employeeId))
+            if (Guid.TryParse(employeeStringId.Value, out Guid employeeId))
             {
                 return Results.BadRequest("Id has incorrect format");
             }

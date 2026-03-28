@@ -14,6 +14,7 @@ namespace GNS.Endpoints.Filters
             var request = context.Arguments
                 .OfType<UpdateWorkingHoursRequest>()
                 .FirstOrDefault();
+                
             if (request is null)
             {
                 Results.BadRequest();
@@ -37,6 +38,7 @@ namespace GNS.Endpoints.Filters
             {
                 errors!.Add("newstarthour", [$"Invalid NewStartHour value: {request.NewStartHour}"]);
             }
+
             if (!TimeOnly.TryParse(request!.NewEndHour, out TimeOnly endHour)
                 && !string.IsNullOrEmpty(request.NewEndHour))
             {

@@ -18,8 +18,9 @@ namespace GNS.Endpoints.Filters
             EndpointFilterInvocationContext context,
             EndpointFilterDelegate next)
         {
-            var ownerStringId = context.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "Id")
-                ?? throw new Exception("Cannot find id claim");
+            var ownerStringId = context.HttpContext.User.Claims
+                .FirstOrDefault(c => c.Type == "Id")
+                    ?? throw new Exception("Failed to read id claim");
 
             if (Guid.TryParse(ownerStringId.Value, out Guid ownerId))
             {

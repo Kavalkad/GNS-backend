@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GNS.Endpoints.Filters
 {
-    public class VerifyNameFilter : IEndpointFilter
+    public class VerifyCityFilter : IEndpointFilter
     {
         public async ValueTask<object?> InvokeAsync(
             EndpointFilterInvocationContext context,
@@ -20,13 +20,13 @@ namespace GNS.Endpoints.Filters
             }
 
             var request = context.Arguments
-                .OfType<INameRequest>()
+                .OfType<ICityRequest>()
                 .FirstOrDefault()
                 ?? throw new Exception("Invalid request body");
 
-            if (request.Name.Any(c => !char.IsLetter(c)))
+            if (request.City.Any(c => !char.IsLetter(c)))
             {
-                errors!.Add("new name", ["Name must contain only letters"]);
+                errors!.Add("city", ["City must contain only letters"]);
             }
             
             context.HttpContext.Items["ValidationErrors"] = errors;
