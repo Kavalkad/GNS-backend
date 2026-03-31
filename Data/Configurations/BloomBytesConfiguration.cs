@@ -13,7 +13,8 @@ namespace GNS.Data.Configurations
             builder
                 .HasMany(bb => bb.Users)
                 .WithOne(u => u.BloomBytes)
-                .HasForeignKey(u => u.BloomBytesId);
+                .HasForeignKey(u => u.BloomBytesId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

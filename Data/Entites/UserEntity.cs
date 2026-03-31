@@ -24,7 +24,6 @@ namespace GNS.Data.Entities
             Email = email;
             HashedPassword = hashedPassword;
             UserName = userName;
-            BloomBytesId = bloomBytesId;
             Role = role;
         }
     }

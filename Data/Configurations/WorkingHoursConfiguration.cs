@@ -11,14 +11,14 @@ namespace GNS.Data.Configurations
             builder.HasKey(wh => wh.Id);
 
             builder
-                .HasMany(wh => wh.CyberClubs)
-                .WithMany(cc => cc.WorkingHours)
-                .UsingEntity<CyberClubWorkingHoursEntity>(
-                    l => l.HasOne<CyberClubEntity>().WithMany().HasForeignKey(ccwh => ccwh.CyberClubId),
-                    r => r.HasOne<WorkingHoursEntity>().WithMany().HasForeignKey(ccwh => ccwh.WorkingHoursId)
-                );
+                .HasIndex(wh => new { wh.CyberClubId, wh.DayOfWeek })
+                .IsUnique();
 
-               
+            builder
+                .HasOne(wh => wh.CyberClub)
+                .WithMany(cc => cc.WorkingHours)
+                .HasForeignKey(wh => wh.CyberClubId);
+                
 
 
         }

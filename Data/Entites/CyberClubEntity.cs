@@ -7,7 +7,7 @@ namespace GNS.Data.Entities
         public string Address { get; set; } = string.Empty;
 
 
-        public List<WorkingHoursEntity>? WorkingHours { get; set; }
+        public ICollection<WorkingHoursEntity> WorkingHours { get; set; } = [];
         public ICollection<EmployeeEntity> Employees { get; set; } = [];
         public Guid OwnerId { get; set; }
         public OwnerEntity Owner { get; set; } = null!;
