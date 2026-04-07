@@ -31,10 +31,13 @@ namespace GNS.Services.Implementations
         )
         {
             var dayOfWeek = date.ParseToCustomDayOfWeek();
-            var workingHours = await _workingHoursService.GetByDayAndCCId(cyberClubId, dayOfWeek)
+            var workingHours = await _workingHoursService.GetByCyberClubIdAsync(cyberClubId, token)
                 ?? throw new Exception($"WorkingHours for day: {dayOfWeek} not found.");
+            var requiredWorkingHours = workingHours.FirstOrDefault(wh => wh.DayOfWeek == dayOfWeek.ToString())
+                ?? throw new Exception("TimeSlotService: GetUnavailableSlotsAsync line 37");
+            var isOpen = bool.Parse(requiredWorkingHours.IsOpen);
 
-            if (!workingHours.IsOpen)
+            if (!isOpen)
             {
                 Results.Problem($"At the date: {date} cyber club not found.");
                 return null;
@@ -42,7 +45,8 @@ namespace GNS.Services.Implementations
 
             var gamingPlaceDateOrders = await _orderService.GetByDateAndGamingPlaceAsync(
                 date: date,
-                gamingPlaceId: gamingPlaceId
+                gamingPlaceId: gamingPlaceId,
+                token: token
             );
 
             var unavailableTimeSlots = gamingPlaceDateOrders

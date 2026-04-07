@@ -6,17 +6,12 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace GNS.Services.Implementations
 {
 
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork(AppDbContext dbcontext) : IUnitOfWork
     {
-        private readonly AppDbContext _dbcontext;
+        private readonly AppDbContext _dbcontext = dbcontext;
         private IDbContextTransaction? _transaction;
 
         public bool HasActiveTransaction => _transaction != null;
-
-        public UnitOfWork(AppDbContext dbcontext)
-        {
-            _dbcontext = dbcontext;
-        }
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {

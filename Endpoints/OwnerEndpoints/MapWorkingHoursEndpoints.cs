@@ -6,7 +6,7 @@ namespace GNS.Endpoints.OwnerEndploints
 {
     public static partial class OwnersEndpoints
     {
-        public static IEndpointRouteBuilder MapWorkingHoursEndpoints(this IEndpointRouteBuilder owner)
+        public static IEndpointRouteBuilder MapWithWorkingHoursEndpoints(this IEndpointRouteBuilder owner)
         {
             var workingHours = owner.MapGroup("working-hours");
             workingHours.MapPost("add", AddWorkingHours);
@@ -14,7 +14,7 @@ namespace GNS.Endpoints.OwnerEndploints
             workingHours.MapPut("update", UpdateWorkingHours)
                 .AddEndpointFilter<UpdateWorkingHoursFilter>()
                 .AddEndpointFilter<FinalValidationFilter>();
-            workingHours.MapDelete("delete-by-ccid", DeleteWHByCCId);
+           // workingHours.MapDelete("delete-by-ccid", DeleteWHByCCId);
             workingHours.MapDelete("delete-by-whid", DeleteWHById);
 
             return owner;
@@ -24,7 +24,7 @@ namespace GNS.Endpoints.OwnerEndploints
             IWorkingHoursService service
             )
         {
-            await service.AddWorkingHours(request);
+            await service.AddWorkingHoursAsync(request);
 
             return Results.Ok($"WorkingHours for day {request.DayOfWeek} successfully addd");
         }
@@ -33,7 +33,7 @@ namespace GNS.Endpoints.OwnerEndploints
             IWorkingHoursService service
             )
         {
-            var workingHours = await service.GetByCCId(cyberClubId);
+            var workingHours = await service.GetByCyberClubIdAsync(cyberClubId);
 
             return TypedResults.Ok(workingHours);
         }
@@ -43,7 +43,7 @@ namespace GNS.Endpoints.OwnerEndploints
             IWorkingHoursService service
             )
         {
-            await service.UpdateWorkingHours(request);
+            await service.UpdateWorkingHoursAsync(request);
 
             return Results.Ok();
         }
@@ -54,16 +54,18 @@ namespace GNS.Endpoints.OwnerEndploints
             IWorkingHoursService service
             )
         {
-            await service.DeleteByWHId(whId);
+            await service.DeleteByWorkingHoursIdAsync(whId);
             return Results.Ok();
         }
+        /*
         public static async Task<IResult> DeleteWHByCCId(
             Guid ccId,
             IWorkingHoursService service
             )
         {
-            await service.DeleteByWHId(ccId);
+            await service.DeleteByCId(ccId);
             return Results.Ok();
         }
+        */
     } 
 }

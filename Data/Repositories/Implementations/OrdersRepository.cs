@@ -7,11 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GNS.Data.Repositories.Implementations
 {
-    public class OrdersRepository : BaseRepository<OrderEntity>, IOrdersRepository
+    public class OrdersRepository(AppDbContext dbcontext) 
+        : BaseRepository<OrderEntity>(dbcontext), IOrdersRepository
     {
-        public OrdersRepository(AppDbContext dbcontext) : base(dbcontext){ }
-
-       
-
     }
 }

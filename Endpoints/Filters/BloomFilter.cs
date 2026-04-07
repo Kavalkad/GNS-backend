@@ -4,13 +4,10 @@ using GNS.Services.Interfaces;
 
 namespace GNS.Endpoints.Filters
 {
-    public class BloomFilter : IEndpointFilter
+    public class BloomFilter(IBloomBytesService bloomBytesService) : IEndpointFilter
     {
-        private readonly IBloomBytesService _bloomBytesService;
-        public BloomFilter(IBloomBytesService bloomBytesService)
-        {
-            _bloomBytesService = bloomBytesService;
-        }
+        private readonly IBloomBytesService _bloomBytesService = bloomBytesService;
+
         public async ValueTask<object?> InvokeAsync(
             EndpointFilterInvocationContext context,
             EndpointFilterDelegate next)
@@ -30,8 +27,8 @@ namespace GNS.Endpoints.Filters
                 return Results.BadRequest("Invalid request body");
             }
 
-            var isEmailExists = await _bloomBytesService.FindEmailData(request.Email);
-            var isUserNameExists = await _bloomBytesService.FindUserNameData(request.UserName);
+            var isEmailExists = await _bloomBytesService.ContainsEmailDataAsync(request.Email);
+            var isUserNameExists = await _bloomBytesService.ContainsUserNameDataAsync(request.UserName);
 
 
             if (!isEmailExists && !isUserNameExists)
@@ -42,11 +39,13 @@ namespace GNS.Endpoints.Filters
             var usersRepository = context.HttpContext.RequestServices
                 .GetRequiredService<IUsersRepository>();
 
-            if (await usersRepository.ContainsEmail(request.Email))
+
+            if (await usersRepository.ContainsExpressionAsync(u => u.Email == request.Email))
             {
                 errors?.Add("email exists", [$"User with email {request.Email} already exists"]);
             }
-            if (await usersRepository.ContainsUserName(request.UserName))
+            
+            if (await usersRepository.ContainsExpressionAsync(u => u.UserName == request.UserName))
             {
                 errors?.Add("username exists", [$"User with UserName {request.Email} already exists"]);
             }

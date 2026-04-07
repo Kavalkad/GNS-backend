@@ -6,6 +6,7 @@ using GNS.Data.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using GNS.Enums;
 using GNS.Extensions;
+using GNS.Exceptions;
 
 namespace GNS.Services.Implementations
 {
@@ -14,31 +15,26 @@ namespace GNS.Services.Implementations
         private readonly IGamingPlacesRepository _gamingPlacesRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICyberClubService _cyberClubService;
-        private readonly IHttpContextAccessor _contextAccessor;
+
 
         public GamingPlaceService(
             IGamingPlacesRepository gamingPlacesRepository,
             IUnitOfWork unitOfWork,
-            ICyberClubService cyberClubService,
-            IHttpContextAccessor contextAccessor
+            ICyberClubService cyberClubService
             )
         {
             _gamingPlacesRepository = gamingPlacesRepository;
             _unitOfWork = unitOfWork;
             _cyberClubService = cyberClubService;
-            _contextAccessor = contextAccessor;
         }
-        public async Task AddGamingPlaces(AddGamingPlacesRequest request)
+        public async Task AddGamingPlaces(AddGamingPlacesRequest request, CancellationToken token = default)
         {
-            var cyberClub = await _cyberClubService.GetById(request.CyberClubId);
+            // Сделать GetWithDetails в репозитории, но не в BaseRepository
 
-            if (cyberClub is null)
-            {
-                Results.InternalServerError("CyberClub not found");
-                return;
-            }
+            var cyberClub = await _cyberClubService.GetClubByIdAsync(request.CyberClubId, token)
+                ?? throw new EntityNotFoundException("Cyber club", request.CyberClubId.ToString());
 
-            var maxGamingPlaceNumber = cyberClub?.GamingPlacesCount;
+            var maxGamingPlaceNumber = cyberClub.GamingPlacesCount;
             var gamingPlaces = new GamingPlaceEntity[request.Count];
 
             _ = Enum.TryParse(request.EquipmentName, out Equipment _equipment);
@@ -47,34 +43,36 @@ namespace GNS.Services.Implementations
             {
                 var gamingPlace = new GamingPlaceEntity
                 {
-                    Number = i + maxGamingPlaceNumber!.Value + 1,
+                    Number = i + maxGamingPlaceNumber + 1,
                     PricePerHour = request.PricePerHour,
                     Equipment = _equipment,
-                    CyberClubId = cyberClub!.Id
+                    CyberClubId = cyberClub.Id
                 };
                 gamingPlaces[i] = gamingPlace;
             }
-            
-            await _gamingPlacesRepository.AddGamingPlaces(gamingPlaces);
-            await _unitOfWork.SaveChangesAsync();
+
+            await _gamingPlacesRepository.AddRangeAsync(gamingPlaces);
+            await _unitOfWork.SaveChangesAsync(token);
         }
+        /*
         public async Task<List<GamingPlaceEntity>> GetByEquipment(Equipment equipment)
         {
             var ownerId = _contextAccessor.TryGetHttpUserId();
-            
+
             return await _gamingPlacesRepository.GetByEquipmentAndOwnerId(ownerId: ownerId, equipment: equipment);
         }
+        */
 
-        public async Task<List<GamingPlaceDto>> GetCCGamingPlaces(Guid cyberClubId)
+        public async Task<List<GamingPlaceDto>> GetCCGamingPlaces(Guid cyberClubId, CancellationToken token = default)
         {
-            var gamingPlaces = await _gamingPlacesRepository.GetCCGamingPlaces(cyberClubId);
-
+            var gamingPlaces = await _gamingPlacesRepository.GetByExpressionAsync(gp => gp.CyberClubId == cyberClubId, token);
 
             return gamingPlaces
                 .OrderBy(gp => gp.Number)
                 .Select(gp => new GamingPlaceDto(gp))
                 .ToList();
         }
+        /*
         public async Task UpdateCCGamingPlaces(UpdateCCGamingPlacesRequest request)
         {
             await _gamingPlacesRepository.UpdateCCGamingPlaces(
@@ -83,14 +81,23 @@ namespace GNS.Services.Implementations
                 request.NewPricePerHour,
                 request.NewEquipmentName);
         }
-        public async Task DeleteCCGamingPlaces(DeleteCCGamingPlacesRequest request)
+        */
+        public async Task DeleteGamingPlaces(DeleteGamingPlacesRequest request, CancellationToken token = default)
         {
-            var equipment = Enum.Parse<Equipment>(request.EquipmentName);
+            _ = Enum.TryParse(request.EquipmentName, out Equipment equipment);
 
-            await _gamingPlacesRepository.DeleteCCGamingPlaces(
-                request.CyberClubName,
-                equipment
-            );
+            if (!Guid.TryParse(request.CyberClubId, out Guid cyberClubId))
+            {
+                throw new IncorrectGuidException(request.CyberClubId);
+            }
+            var gamingPlaces = await _gamingPlacesRepository
+                .GetByExpressionAsync(gp => gp.CyberClubId == cyberClubId && gp.Equipment == equipment);
+
+            foreach (var gp in gamingPlaces)
+            {
+                _gamingPlacesRepository.Delete(gp);
+            }
+            await _unitOfWork.SaveChangesAsync(token);
         }
     }
 

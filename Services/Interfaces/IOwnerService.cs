@@ -5,7 +5,7 @@ namespace GNS.Services.Interfaces
 {
     public interface IOwnerService
     {
-        Task RegisterOwner(RegisterOwnerRequest request);
-        Task<LoginOwnerResponse> Login(LoginOwnerRequest request);
+        Task RegisterOwnerAsync(RegisterOwnerRequest request, CancellationToken token = default);
+        Task<LoginOwnerResponse> Login(LoginOwnerRequest request, CancellationToken token = default);
     }
 }

@@ -22,6 +22,10 @@ namespace GNS.Data.Repositories.Implementations
             await _dbSet.AddAsync(entity, token);
         }
 
+        public async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken token = default)
+        {
+            await _dbSet.AddRangeAsync(entities, token);
+        }
 
         public async Task<List<TEntity>> GetAllAsync(CancellationToken token = default)
         {
@@ -41,7 +45,7 @@ namespace GNS.Data.Repositories.Implementations
         {
             _dbSet.Update(entity);
         }
-         public void Delete(TEntity entity)
+        public void Delete(TEntity entity)
         {
             _dbSet.Remove(entity);
         }
@@ -49,9 +53,19 @@ namespace GNS.Data.Repositories.Implementations
         public async Task DeleteByIdAsync(Guid id, CancellationToken token = default)
         {
             var entity = await GetByIdAsync(id, token)
-                ?? throw new EntityNotFoundException(nameof(TEntity));
+                ?? throw new EntityNotFoundException(nameof(TEntity), id.ToString());
 
             _dbSet.Remove(entity);
+        }
+
+        public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken token = default)
+        {
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate, token);
+        }
+
+        public async Task<List<TEntity>> GetByExpressionAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken token = default)
+        {
+            return await _dbSet.AsNoTracking().Where(predicate).ToListAsync(token);
         }
     }
 }

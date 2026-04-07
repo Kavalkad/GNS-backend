@@ -19,17 +19,11 @@ namespace GNS.Data.Configurations
 
             builder
                 .HasMany(gp => gp.Orders)
-                .WithOne(o => o.GamingPlace)
+                .WithOne(o => o.GamingPlace);
 
-                ;
+            
 
-            builder
-                .HasMany(gp => gp.Games)
-                .WithMany(g => g.GamingPlaces)
-                .UsingEntity<GameGamingPlaceEntity>(
-                    l => l.HasOne<GameEntity>().WithMany().HasForeignKey(ggp => ggp.GameId),
-                    r => r.HasOne<GamingPlaceEntity>().WithMany().HasForeignKey(ggp => ggp.GamingPlaceId)
-                );
+
         }
     }
 }

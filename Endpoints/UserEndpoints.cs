@@ -51,7 +51,7 @@ namespace GNS.Endpoints
             IUserService userService
             )
         {
-            await userService.Register(request);
+            await userService.RegisterAsync(request);
             return Results.Ok();
         }
 
@@ -61,7 +61,7 @@ namespace GNS.Endpoints
             HttpContext context
         )
         {
-            var response = await userService.Login(request);
+            var response = await userService.LoginAsync(request);
             
             if (response.Role != Role.User)
             {
@@ -101,22 +101,21 @@ namespace GNS.Endpoints
 
             if (userIdClaim is null)
             {
-                Console.WriteLine("Cannot find Id claim in token");
                 Results.Problem("userIdClaim is null");
             }
             if (!Guid.TryParse(userIdClaim.Value, out Guid userId))
             {
                 return Results.Problem("userIdClaim.Value has incorrect format");
             }
-            var verificationResponse = await service.VerifyRefreshToken(refreshToken, userId);
+            var verificationResponse = await service.VerifyRefreshTokenAsync(refreshToken, userId);
 
             if (!verificationResponse.IsValid)
             {
                 return Results.Unauthorized();
-                throw new SecurityTokenExpiredException("Токен протух");
+                //
             }
 
-            var accessToken = await service.GetNewAcessToken(userId);
+            var accessToken = await service.GetNewAcessTokenAsync(userId);
             context.Response.Cookies.Append("accessToken", accessToken, new CookieOptions
             {
                 HttpOnly = true,
@@ -144,14 +143,14 @@ namespace GNS.Endpoints
            ICyberClubService cyberClubService
            )
         {
-            var cyberClubs = await cyberClubService.GetAllClubs();
+            var cyberClubs = await cyberClubService.GetAllClubsAsync();
             return TypedResults.Ok(cyberClubs);
         }
         public static async Task<IResult> GetClubsByCity(
             string city,
             ICyberClubService cyberClubService)
         {
-            var cityClubs = await cyberClubService.GetByCity(city);
+            var cityClubs = await cyberClubService.GetByCityAsync(city);
             return TypedResults.Ok(cityClubs);
         }
         public static async Task<IResult> CreateOrder(
@@ -177,13 +176,13 @@ namespace GNS.Endpoints
             IGameService gameService
         )
         {
-            var games = await gameService.GetByFilter(filter);
+            var games = await gameService.GetByTitleFilterAsync(filter);
 
             return TypedResults.Ok(games);
         }
         public static async Task<IResult> DeleteUser(IUserService service)
         {
-            await service.DeleteUser();
+            await service.DeleteUserAsync();
             return Results.Ok();
         }
     }

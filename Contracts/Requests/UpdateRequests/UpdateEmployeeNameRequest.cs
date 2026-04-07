@@ -5,6 +5,6 @@ namespace GNS.Contracts.Requests
 {
     public class UpdateEmployeeNameRequest : UpdateEmployeeRequest, INameRequest
     {
-        [Required] public string NewNameValue { get; set; } = string.Empty;
+        [Required] public string Name { get; set; } = string.Empty;
     }
 }

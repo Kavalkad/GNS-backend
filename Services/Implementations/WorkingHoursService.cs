@@ -4,6 +4,7 @@ using GNS.Services.Interfaces;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Contracts.Requests;
 using GNS.Data.Entities;
+using GNS.Exceptions;
 
 namespace GNS.Services.Implementations
 {
@@ -20,72 +21,97 @@ namespace GNS.Services.Implementations
             _unitOfWork = unitOfWork;
         }
 
-        public async Task AddWorkingHours(AddWorkingHoursRequest request)
+        public async Task AddWorkingHoursAsync(AddWorkingHoursRequest request, CancellationToken token = default)
         {
-            if (!bool.TryParse(request.IsOpen, out bool _isOpen))
+            if (!bool.TryParse(request.IsOpen, out bool isOpen))
             {
-                throw new Exception($"Invalid IsOpen value: {request.IsOpen}");
+                throw new IncorrectBoolException(request.IsOpen);
             }
+
 
             if (!Guid.TryParse(request.CyberClubId, out Guid cyberClubId))
             {
-                throw new Exception($"Invalid request.CyberClubId value: {request.CyberClubId}");
+                throw new IncorrectGuidException(request.CyberClubId);
             }
 
-            var dayOfWeek = Enum.Parse<CustomDayOfWeek>(request.DayOfWeek);
+            if (!Enum.TryParse(request.DayOfWeek, out CustomDayOfWeek dayOfWeek))
+            {
+                throw new IncorrectDayOfWeekException(request.DayOfWeek);
+            }
+
+            if (!TimeOnly.TryParse(request.StartHour, out TimeOnly startHour))
+            {
+                throw new IncorrectTimeException("Start hour", request.StartHour);
+            }
+
+            if (!TimeOnly.TryParse(request.StartHour, out TimeOnly endHour))
+            {
+                throw new IncorrectTimeException("End hour", request.EndHour);
+            }
 
             var workingHours = new WorkingHoursEntity
             {
                 CyberClubId = cyberClubId,
                 DayOfWeek = dayOfWeek,
-                StartHour = TimeOnly.Parse(request.StartHour),
-                EndHour = TimeOnly.Parse(request.EndHour),
-                IsOpen = _isOpen
+                StartHour = startHour,
+                EndHour = endHour,
+                IsOpen = isOpen
             };
 
-            await _workingHoursRepository.CreateWorkingHours(workingHours);
-            await _unitOfWork.SaveChangesAsync();
-
+            await _workingHoursRepository.AddAsync(workingHours, token);
+            await _unitOfWork.SaveChangesAsync(token);
         }
 
-        public async Task<List<WorkingHoursDto>> GetByCCId(Guid cyberClubId)
+        public async Task<List<WorkingHoursDto>> GetByCyberClubIdAsync(Guid cyberClubId, CancellationToken token = default)
         {
-            var workingHours = await _workingHoursRepository.GetWorkingHoursAsync(cyberClubId);
+
+            var workingHours = await _workingHoursRepository
+                .GetByExpressionAsync(wh => wh.CyberClubId == cyberClubId, token);
 
             return workingHours
                 .OrderBy(wh => wh.DayOfWeek)
                 .Select(wh => new WorkingHoursDto(wh))
                 .ToList();
         }
+        /*
         public async Task<WorkingHoursEntity?> GetByDayAndCCId(Guid cyberClubId, CustomDayOfWeek dayOfWeek)
         {
             var workingHours = await _workingHoursRepository.GetWorkingHoursAsync(cyberClubId);
 
             return workingHours.SingleOrDefault(wh => wh.DayOfWeek == dayOfWeek);
         }
+        */
 
-        public async Task UpdateWorkingHours(UpdateWorkingHoursRequest request)
+        public async Task UpdateWorkingHoursAsync(UpdateWorkingHoursRequest request, CancellationToken token = default)
         {
+            if (!Guid.TryParse(request.WorkingHoursId, out Guid workingHoursId))
+            {
+                throw new IncorrectGuidException(request.WorkingHoursId);
+            }
+
+            var workingHours = await _workingHoursRepository.FindAsync(wh => wh.Id == workingHoursId, token)
+                ?? throw new EntityNotFoundException("WorkingHours", request.WorkingHoursId);
+
+
             CustomDayOfWeek? newDayOfWeek = Enum.Parse<CustomDayOfWeek>(request.NewDayOfWeek);
             TimeOnly? newStartHour = TimeOnly.Parse(request.NewStartHour);
             TimeOnly? newEndHour = TimeOnly.Parse(request.NewEndHour);
             bool? newIsOpen = bool.Parse(request.NewIsOpen);
 
-            await _workingHoursRepository.UpdateWorkingHours(
-                request.WorkingHoursId,
-                newDayOfWeek,
-                newStartHour,
-                newEndHour,
-                newIsOpen);
+            _workingHoursRepository.Update(workingHours);
+            await _unitOfWork.SaveChangesAsync(token);
         }
-        public async Task DeleteByCCId(Guid ccId)
+        // Метод не особо нужен потому что EF Core автоматически удалить связанные записи при удалении клуба
+       /* public async Task DeleteByCyberClubIdAsync(Guid ccId, CancellationToken token = default)
+         {
+             await _workingHoursRepository.DeleteByCyberClubId(ccId);
+             await _unitOfWork.SaveChangesAsync(token);
+         }
+ */
+        public async Task DeleteByWorkingHoursIdAsync(Guid whId, CancellationToken token = default)
         {
-            await _workingHoursRepository.DeleteByCCId(ccId);
-        }
-
-        public async Task DeleteByWHId(Guid whId)
-        {
-            await _workingHoursRepository.DeleteByWHId(whId);
+            await _workingHoursRepository.DeleteByIdAsync(whId, token);
+            await _unitOfWork.SaveChangesAsync(token);
         }
 
 

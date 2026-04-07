@@ -69,26 +69,23 @@ namespace backend.Migrations
                     b.ToTable("CyberClubs");
                 });
 
-            modelBuilder.Entity("GNS.Data.Entities.CyberClubWorkingHoursEntity", b =>
-                {
-                    b.Property<Guid>("CyberClubId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("WorkingHoursId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("CyberClubId", "WorkingHoursId");
-
-                    b.HasIndex("WorkingHoursId");
-
-                    b.ToTable("CyberClubWorkingHoursEntity");
-                });
-
             modelBuilder.Entity("GNS.Data.Entities.GameEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("GamingPlaceEntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("OnPc")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("OnPlayStation")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("OnXbox")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -96,22 +93,9 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GamingPlaceEntityId");
+
                     b.ToTable("Games");
-                });
-
-            modelBuilder.Entity("GNS.Data.Entities.GameGamingPlaceEntity", b =>
-                {
-                    b.Property<Guid>("GameId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GamingPlaceId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("GameId", "GamingPlaceId");
-
-                    b.HasIndex("GamingPlaceId");
-
-                    b.ToTable("GameGamingPlaces");
                 });
 
             modelBuilder.Entity("GNS.Data.Entities.GamingPlaceEntity", b =>
@@ -257,6 +241,9 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CyberClubId", "DayOfWeek")
+                        .IsUnique();
+
                     b.ToTable("WorkingHours");
                 });
 
@@ -301,6 +288,10 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("TaxIdentificationNumber")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.ToTable("Owners", (string)null);
                 });
 
@@ -315,34 +306,11 @@ namespace backend.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("GNS.Data.Entities.CyberClubWorkingHoursEntity", b =>
+            modelBuilder.Entity("GNS.Data.Entities.GameEntity", b =>
                 {
-                    b.HasOne("GNS.Data.Entities.CyberClubEntity", null)
-                        .WithMany()
-                        .HasForeignKey("CyberClubId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GNS.Data.Entities.WorkingHoursEntity", null)
-                        .WithMany()
-                        .HasForeignKey("WorkingHoursId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GNS.Data.Entities.GameGamingPlaceEntity", b =>
-                {
-                    b.HasOne("GNS.Data.Entities.GameEntity", null)
-                        .WithMany()
-                        .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("GNS.Data.Entities.GamingPlaceEntity", null)
-                        .WithMany()
-                        .HasForeignKey("GamingPlaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Games")
+                        .HasForeignKey("GamingPlaceEntityId");
                 });
 
             modelBuilder.Entity("GNS.Data.Entities.GamingPlaceEntity", b =>
@@ -391,10 +359,21 @@ namespace backend.Migrations
                     b.HasOne("GNS.Data.Entities.BloomBytesEntity", "BloomBytes")
                         .WithMany("Users")
                         .HasForeignKey("BloomBytesId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("BloomBytes");
+                });
+
+            modelBuilder.Entity("GNS.Data.Entities.WorkingHoursEntity", b =>
+                {
+                    b.HasOne("GNS.Data.Entities.CyberClubEntity", "CyberClub")
+                        .WithMany("WorkingHours")
+                        .HasForeignKey("CyberClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CyberClub");
                 });
 
             modelBuilder.Entity("GNS.Data.Entities.EmployeeEntity", b =>
@@ -433,10 +412,14 @@ namespace backend.Migrations
                     b.Navigation("Employees");
 
                     b.Navigation("GamingPlaces");
+
+                    b.Navigation("WorkingHours");
                 });
 
             modelBuilder.Entity("GNS.Data.Entities.GamingPlaceEntity", b =>
                 {
+                    b.Navigation("Games");
+
                     b.Navigation("Orders");
                 });
 

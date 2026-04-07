@@ -2,6 +2,7 @@ using GNS.Contracts.Requests;
 using GNS.Contracts.Responses;
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
+using GNS.Exceptions;
 using GNS.Services.Interfaces;
 
 namespace GNS.Services.Implementations
@@ -27,65 +28,65 @@ namespace GNS.Services.Implementations
             _bloomBytesService = bloomBytesService;
         }
 
-        public async Task RegisterOwner(RegisterOwnerRequest request)
+        public async Task RegisterOwnerAsync(RegisterOwnerRequest request, CancellationToken token = default)
         {
-            // Впихнуть в фильтр!!!!!!!!!!!!!!!!!!!!!
-            var isValidEmail = await _bloomBytesService.FindEmailData(request.Email);
-            var isValidUserName = await _bloomBytesService.FindUserNameData(request.UserName);
-            if (!isValidEmail || !isValidUserName)
-            {
-                Results.InternalServerError($"Somebody with email: {request.Email} or username: {request.UserName} already exists");
-            }
-
             try
             {
-                await _unitOfWork.BeginTransactionAsync();
+                Console.WriteLine("await _unitOfWork.BeginTransactionAsync(token);");
+                await _unitOfWork.BeginTransactionAsync(token);
 
-                var bloomBytesEntity = new BloomBytesEntity
-                {
-                    EmailBytes = _bloomBytesService.GetBytes(request.Email),
-                    UserNameBytes = _bloomBytesService.GetBytes(request.UserName),
-                };
+                Console.WriteLine("var bloomBytesId = await _bloomBytesService.SaveBloomBytesAsyn");
+                
+                var bloomBytesId = await _bloomBytesService.SaveBloomBytesAsync(request.Email, request.UserName, token);
+                await _unitOfWork.SaveChangesAsync(token);
+
+                Console.WriteLine("var hashedPassword = _hasher.Generate(reques");
 
                 var hashedPassword = _hasher.Generate(request.Password);
                 var hashedSuperSecretWord = _hasher.Generate(request.SuperSecretWord);
+                var taxIdentificationNumber = request.TaxIdentificationNumber;
 
+                Console.WriteLine(bloomBytesId.ToString());
                 var owner = new OwnerEntity(
                     email: request.Email,
                     hashedPassword: hashedPassword,
                     userName: request.UserName,
                     hashedSuperSecretWord: hashedSuperSecretWord,
                     role: Enums.Role.Owner,
-                    bloomBytesId: bloomBytesEntity.Id
+                    taxIdentificationNumber: taxIdentificationNumber,
+                    bloomBytesId: bloomBytesId
                 );
-                
-                await _ownersRepository.AddOwner(owner);
-                await _bloomBytesService.SaveBloomBytesAsync(bloomBytesEntity);
 
+                Console.WriteLine("owner created");
+                await _ownersRepository.AddAsync(owner, token);
 
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
+                Console.WriteLine("Addition owner to db succed");
+                await _unitOfWork.SaveChangesAsync(token);
+                Console.WriteLine("saving changes succed");
+                await _unitOfWork.CommitTransactionAsync(token);
 
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackTransactionAsync();
+                await _unitOfWork.RollbackTransactionAsync(token);
+
             }
-
-
         }
-        public async Task<LoginOwnerResponse> Login(LoginOwnerRequest request)
+        public async Task<LoginOwnerResponse> Login(LoginOwnerRequest request, CancellationToken token = default)
         {
-            var owner = await _ownersRepository.GetByEmail(request.Email);
+            var owner = await _ownersRepository.FindAsync(o => o.Email == request.Email, token)
+                ?? throw new EntityNotFoundException("Owner", request.Email);
+
             var result = _hasher.Verify(request.Password, owner.HashedPassword)
                 && _hasher.Verify(request.SuperSecretWord, owner.HashedSuperSecretWord);
 
             if (!result)
             {
-                throw new Exception("Wrong password");
+                throw new Exception("Wrong password or supersecret word");
             }
+
             var accessToken = _tokenService.GenerateAccessToken(owner);
-            var refreshToken = await _tokenService.GenerateRefreshToken(owner.Id);
+            var refreshToken = await _tokenService.GenerateRefreshTokenAsync(owner.Id, token);
 
             return new LoginOwnerResponse
             {
@@ -93,5 +94,6 @@ namespace GNS.Services.Implementations
                 RefreshToken = refreshToken.Token.ToString()
             };
         }
+
     }
 }

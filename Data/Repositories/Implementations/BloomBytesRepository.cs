@@ -5,13 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GNS.Data.Repositories.Implementations
 {
-    public class BloomBytesRepository : BaseRepository<BloomBytesEntity>, IBloomBytesRepository
+    public class BloomBytesRepository(AppDbContext dbcontext) 
+        : BaseRepository<BloomBytesEntity>(dbcontext), IBloomBytesRepository
     {
-        public BloomBytesRepository(AppDbContext dbcontext) : base(dbcontext)
-        {
-
-        }
-
-        
     }
 }

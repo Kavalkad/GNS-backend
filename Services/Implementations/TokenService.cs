@@ -8,6 +8,7 @@ using GNS.Data.Entities;
 using GNS.Data.Repositories.Implementations;
 using GNS.Data.Repositories.Interfaces;
 using System.Threading.Tasks;
+using GNS.Exceptions;
 
 
 namespace GNS.Services.Implementations
@@ -49,7 +50,7 @@ namespace GNS.Services.Implementations
             return tokenValue;
         }
 
-        public async Task<RefreshTokenEntity> GenerateRefreshToken(Guid userId)
+        public async Task<RefreshTokenEntity> GenerateRefreshTokenAsync(Guid userId, CancellationToken token = default)
         {
             var refreshTokenValue = Guid.NewGuid();
 
@@ -60,19 +61,33 @@ namespace GNS.Services.Implementations
                 UserId = userId
             };
 
-            await _refreshTokensRepository.AddAsync(refreshToken);
-            await _unitOfWork.SaveChangesAsync();
+            await _refreshTokensRepository.AddAsync(refreshToken, token);
+            await _unitOfWork.SaveChangesAsync(token);
 
             return refreshToken;
         }
-        public async Task<List<RefreshTokenEntity>> GetByUserId(Guid userId)
+
+        public async Task<List<RefreshTokenEntity>> GetByUserIdAsync(Guid userId, CancellationToken token = default)
         {
-            return await _refreshTokensRepository.GetTokensByUserId(userId);
+            return await _refreshTokensRepository.GetByExpressionAsync(u => u.Id == userId);
         }
-        public async Task RevokeRefreshToken(string refreshTokenValue)
+
+        public async Task RevokeRefreshTokenAsync(string refreshTokenValue, CancellationToken token = default)
         {
-            await _refreshTokensRepository.RevokeRefreshToken(refreshTokenValue);
-            await _unitOfWork.SaveChangesAsync();
+            if (!Guid.TryParse(refreshTokenValue, out Guid result))
+            {
+                throw new IncorrectGuidException(refreshTokenValue, refreshTokenValue);
+            }
+
+            var refreshToken = await _refreshTokensRepository.FindAsync(rt => rt.Token == result, token)
+                ?? throw new EntityNotFoundException("RefreshToken", refreshTokenValue);
+
+            refreshToken.RevokedAt = DateTime.UtcNow;
+
+            _refreshTokensRepository.Update(refreshToken);
+            await _unitOfWork.SaveChangesAsync(token);
         }
+
+
     }
 }

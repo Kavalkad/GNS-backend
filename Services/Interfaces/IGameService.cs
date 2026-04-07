@@ -6,9 +6,12 @@ namespace GNS.Services.Interfaces
 {
     public interface IGameService
     {
-        Task Add(string title);
-        Task<List<GameDto>> GetByFilter(string filter);
-        Task Update(UpdateGameRequest request);
-        Task Delete(Guid gameId);
+        Task AddAsync(AddGameRequest request, CancellationToken token = default);
+        Task<List<GameDto>> GetByTitleFilterAsync(string filter, CancellationToken token = default);
+        Task UpdateTitleAsync(UpdateGameTitleRequest request, CancellationToken token = default);
+        Task UpdateOnPCAsync(UpdateGameOnRequest request, CancellationToken token = default);
+        Task UpdateOnPlayStationAsync(UpdateGameOnRequest request, CancellationToken token = default);
+        Task UpdateOnXboxAsync(UpdateGameOnRequest request, CancellationToken token = default);
+        Task DeleteGameByIdAsync(Guid gameId, CancellationToken token = default);
     }
 }

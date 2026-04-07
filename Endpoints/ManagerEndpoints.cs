@@ -28,12 +28,12 @@ namespace GNS.Endpoints
 
 
             manager.MapPut("give-bonus", GiveBonus)
-                .AddEndpointFilter<PersonFilter>()
+             //   .AddEndpointFilter<PersonFilter>()
                 .AddEndpointFilter<BonusFilter>()
                 .AddEndpointFilter<FinalValidationFilter>();
 
             manager.MapPut("give-penalty", GivePenalty)
-                .AddEndpointFilter<PersonFilter>()
+               // .AddEndpointFilter<PersonFilter>()
                 .AddEndpointFilter<PenaltyFilter>()
                 .AddEndpointFilter<FinalValidationFilter>();
 
@@ -46,16 +46,16 @@ namespace GNS.Endpoints
             IEmployeeService employeeService
         )
         {
-            var employee = await employeeService.GetByNames(firstName, lastName);
+            var employee = await employeeService.GetByNamesAsync(firstName, lastName);
             return TypedResults.Ok(employee);
         }
         
         public static async Task<IResult> GetCyberClubEmployees(
-            Guid cyberClubId,
+            string cyberClubId,
             IEmployeeService employeeService
         )
         {
-            var employees = await employeeService.GetByCCId(cyberClubId);
+            var employees = await employeeService.GetByCyberClubIdAsync(cyberClubId);
             return TypedResults.Ok(employees);
         }
         
@@ -65,7 +65,7 @@ namespace GNS.Endpoints
             IEmployeeService service
         )
         {
-            await service.GiveBonus(request);
+            await service.GiveBonusAsync(request);
             return Results.Ok();
         }
 
@@ -74,7 +74,7 @@ namespace GNS.Endpoints
             IEmployeeService service
         )
         {
-            await service.GivePenalty(request);
+            await service.GivePenaltyAsync(request);
             return Results.Ok();
         }
     }

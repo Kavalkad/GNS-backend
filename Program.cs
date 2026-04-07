@@ -5,7 +5,6 @@ using GNS.Data.Repositories.Interfaces;
 using GNS.Endpoints;
 using GNS.Endpoints.Filters;
 using GNS.Extensions;
-using GNS.Middleware;
 using GNS.Services;
 using GNS.Services.Implementations;
 using GNS.Services.Interfaces;

@@ -56,14 +56,14 @@ namespace GNS.BackgroundServices
             }
 
         }
-        private async Task MonthlySetZeroBonuses()
+        private async Task MonthlySetZeroBonuses(CancellationToken token = default)
         {
             try
             {
                 using var scope = _scopeFactory.CreateScope();
                 var employeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
 
-                await employeeService.SetZeroBonuses();
+                await employeeService.SetZeroBonusesAsync(token);
             }
             catch (Exception e)
             {

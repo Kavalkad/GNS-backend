@@ -6,7 +6,7 @@ namespace GNS.Endpoints.OwnerEndploints
 {
     public static partial class OwnersEndpoints
     {
-        public static IEndpointRouteBuilder MapGamingPlaceEndpoints(this IEndpointRouteBuilder owner)
+        public static IEndpointRouteBuilder MapWithGamingPlaceEndpoints(this IEndpointRouteBuilder owner)
         {
             var gamingPlaces = owner.MapGroup("gaming-places");
             gamingPlaces.MapPost("add", AddGamingPlaces);
@@ -43,11 +43,11 @@ namespace GNS.Endpoints.OwnerEndploints
             return Results.Ok();
         }
         public static async Task<IResult> DeleteCCGamingPlaces(
-            [FromBody] DeleteGamingPlacesByCyberClubIdAndEquipmentNameRequest request,
+            [FromBody] DeleteGamingPlacesRequest request,
             IGamingPlaceService service
             )
         {
-            await service.DeleteCCGamingPlaces(request);
+            await service.DeleteGamingPlaces(request);
             return Results.Ok();
         }
     }

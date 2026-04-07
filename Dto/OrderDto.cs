@@ -15,9 +15,9 @@ namespace GNS.Dto
         public OrderDto(OrderEntity o)
         {
             Id = o.Id;
-            CyberClubName = o.GamingPlace.CyberClub.Name;
-            GamingPlaceNumber = o.GamingPlace.Number;
-            EquipmentName = Enum.GetName(o.GamingPlace.Equipment);
+         //   CyberClubName = o.GamingPlace.CyberClub.Name;
+         //   GamingPlaceNumber = o.GamingPlace.Number;
+          //  EquipmentName = Enum.GetName(o.GamingPlace.Equipment);
             Start = o.DateTimeStart.ToString();
             End = o.DateTimeEnd.ToString();
             TotalPrice = o.TotalSum;

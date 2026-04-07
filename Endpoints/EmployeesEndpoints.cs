@@ -25,7 +25,7 @@ namespace GNS.Endpoints
                 HttpContext context
             )
         {
-            var response = await employeeService.Login(request);
+            var response = await employeeService.LoginAsync(request);
         
             if (context.Request.Cookies.ContainsKey("accessToken"))
             {

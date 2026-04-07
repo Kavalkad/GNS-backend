@@ -24,7 +24,7 @@ namespace GNS.Endpoints.Filters
                 .FirstOrDefault()
                 ?? throw new Exception("Invalid request body");
 
-            if (request.Name.Any(c => !char.IsLetter(c)))
+            if (request.Name.IsNotName())
             {
                 errors!.Add("new name", ["Name must contain only letters"]);
             }

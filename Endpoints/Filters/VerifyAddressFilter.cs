@@ -24,7 +24,7 @@ namespace GNS.Endpoints.Filters
                 .FirstOrDefault()
                 ?? throw new Exception("Invalid request body");
 
-            if (!request.Address.IsAddress())
+            if (request.Address.IsNotAddress())
             {
                 errors!.Add("address", ["address must contain only letters, digits, whitespace or \".\"."]);
             }

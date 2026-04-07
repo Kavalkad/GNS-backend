@@ -10,8 +10,8 @@ namespace GNS.Data
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {
-            Database.EnsureDeleted();
-           // Database.EnsureCreated();  
+            //Database.EnsureDeleted();
+            Database.EnsureCreated();  
         }
 
         public DbSet<CyberClubEntity> CyberClubs { get; set; }
@@ -19,7 +19,6 @@ namespace GNS.Data
         public DbSet<EmployeeEntity> Employees { get; set; }
         public DbSet<GameEntity> Games { get; set; }
         public DbSet<GamingPlaceEntity> GamingPlaces { get; set; }
-        public DbSet<GameGamingPlaceEntity> GameGamingPlaces { get; set; }
         public DbSet<OrderEntity> Orders { get; set; }
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<OwnerEntity> Owners { get; set; }

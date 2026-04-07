@@ -4,7 +4,7 @@ namespace GNS.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<string> GetNewAcessToken(Guid userId);
-        Task<VerifyRefreshTokenResponse> VerifyRefreshToken(string tokenValue, Guid userId);
+        Task<string> GetNewAcessTokenAsync(Guid userId, CancellationToken token = default);
+        Task<VerifyRefreshTokenResponse> VerifyRefreshTokenAsync(string tokenValue, Guid userId, CancellationToken token = default);
     }
 }

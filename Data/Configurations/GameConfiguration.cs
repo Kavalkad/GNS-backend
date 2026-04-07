@@ -10,15 +10,7 @@ namespace GNS.Data.Configurations
         {
             builder.HasKey(g => g.Id);
 
-
-
-            builder
-                .HasMany(g => g.GamingPlaces)
-                .WithMany(gp => gp.Games)
-                .UsingEntity<GameGamingPlaceEntity>(
-                    l => l.HasOne<GamingPlaceEntity>().WithMany().HasForeignKey(ggp => ggp.GamingPlaceId),
-                    r => r.HasOne<GameEntity>().WithMany().HasForeignKey(ggp => ggp.GameId)
-                );
+           
                 
         }
     }

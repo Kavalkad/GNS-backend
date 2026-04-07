@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using GNS.Contracts.Requests.Interfaces;
 using GNS.Interfaces;
 
 namespace GNS.Contracts.Requests
 {
-    public record class DeleteEmployeeRequest : IPersonRequest
+    public record class DeleteEmployeeRequest : IEmployeeRequest
     {
-        [Required] public string FirstName { get; set; } = string.Empty;
-        [Required] public string LastName { get; set; } = string.Empty;
+        public string EmployeeId { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
     }
 }

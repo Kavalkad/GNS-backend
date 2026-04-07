@@ -8,10 +8,10 @@ namespace GNS.Services.Interfaces
 {
     public interface IGamingPlaceService
     {
-        Task AddGamingPlaces(AddGamingPlacesRequest request);
-        Task<List<GamingPlaceDto>> GetCCGamingPlaces(Guid cyberClubId);
-        Task UpdateCCGamingPlaces(UpdateCCGamingPlacesRequest request);
-        Task DeleteCCGamingPlaces(DeleteCCGamingPlacesRequest request);
-        Task<List<GamingPlaceEntity>> GetByEquipment(Equipment equipment);
+        Task AddGamingPlaces(AddGamingPlacesRequest request, CancellationToken token = default);
+        Task<List<GamingPlaceDto>> GetCCGamingPlaces(Guid cyberClubId, CancellationToken token = default);
+        //Task UpdateCCGamingPlaces(UpdateCCGamingPlacesRequest request);
+        Task DeleteGamingPlaces(DeleteGamingPlacesRequest request, CancellationToken token = default);
+        // Task<List<GamingPlaceEntity>> GetByEquipment(Equipment equipment);
     }
 }

@@ -16,6 +16,7 @@ namespace GNS.Endpoints
                                {
                                    policy.RequireClaim(CustomClaims.OwnerClaim.Type, CustomClaims.OwnerClaim.Value);
                                });
+
             owner.MapPost("register", RegisterOwner)
                 .AllowAnonymous()
                 .AddEndpointFilter<BloomFilter>()
@@ -25,11 +26,11 @@ namespace GNS.Endpoints
                 .AllowAnonymous();
 
 
-            owner.MapWorkingHoursEndpoints();    
-            owner.MapCyberClubEndpoints();
-            owner.MapGamingPlaceEndpoints();
-            owner.MapGamesEndpoints();
-            owner.MapEmployeeEndpoints();
+            owner.MapWithWorkingHoursEndpoints();    
+            owner.MapWithCyberClubEndpoints();
+            owner.MapWithGamingPlaceEndpoints();
+            owner.MapWithGamesEndpoints();
+            owner.MapWithEmployeeEndpoints();
 
             
             return app;
@@ -40,7 +41,7 @@ namespace GNS.Endpoints
             IOwnerService service
             )
         {
-            await service.RegisterOwner(request);
+            await service.RegisterOwnerAsync(request);
             return Results.Ok();
         }
         public static async Task<IResult> Login(

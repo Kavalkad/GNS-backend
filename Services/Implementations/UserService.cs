@@ -1,8 +1,10 @@
+using System.Linq.Expressions;
 using GNS.Contracts.Requests;
 using GNS.Contracts.Responses;
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Enums;
+using GNS.Exceptions;
 using GNS.Extensions;
 using GNS.Services.Interfaces;
 
@@ -36,8 +38,15 @@ namespace GNS.Services.Implementations
             _bloomBytesService = bloomBytesService;
             _unitOfWork = unitOfWork;
         }
+        public async Task<UserEntity?> FindUserAsync(
+            Expression<Func<UserEntity, bool>> predicate,
+            CancellationToken token = default
+            )
+        {
+            return await _usersRepository.FindAsync(predicate, token);     
+        }
 
-        public async Task Register(RegisterUserRequest request)
+        public async Task RegisterAsync(RegisterUserRequest request, CancellationToken token = default)
         {
 
             //var isUniqueEmail = await _bloomBytesService.FindEmailData(request.Email);
@@ -45,28 +54,24 @@ namespace GNS.Services.Implementations
 
             try
             {
-                await _unitOfWork.BeginTransactionAsync();
+                await _unitOfWork.BeginTransactionAsync(token);
 
                 var hashedPassword = _hasher.Generate(request.Password);
 
-                var bloomBytesEntity = new BloomBytesEntity
-                {
-                    EmailBytes = _bloomBytesService.GetBytes(request.Email),
-                    UserNameBytes = _bloomBytesService.GetBytes(request.UserName),
+                var bloomBytesId = await _bloomBytesService.SaveBloomBytesAsync(request.Email, request.UserName, token);
 
-                };
                 var userEntity = new UserEntity
                 (
                     email: request.Email,
                     hashedPassword: hashedPassword,
                     userName: request.UserName,
-                    bloomBytesId: bloomBytesEntity.Id
+                    bloomBytesId: bloomBytesId
                 );
-                await _bloomBytesService.SaveBloomBytesAsync(bloomBytesEntity);
-                await _usersRepository.AddUserAsync(userEntity);
 
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
+                await _usersRepository.AddAsync(userEntity);
+
+                await _unitOfWork.SaveChangesAsync(token);
+                await _unitOfWork.CommitTransactionAsync(token);
 
             }
             catch (Exception e)
@@ -77,14 +82,11 @@ namespace GNS.Services.Implementations
 
         }
 
-
-
-
-        public async Task<LoginUserResponse> Login(LoginUserRequest request)
+        public async Task<LoginUserResponse> LoginAsync(LoginUserRequest request, CancellationToken token = default)
         {
 
-            var user = await _usersRepository.GetByEmailAsync(request.Email)
-                ?? throw new Exception("Wrong email");
+            var user = await _usersRepository.FindAsync(u => u.Email == request.Email, token)
+                ?? throw new EntityNotFoundException("User", request.Email);
 
             var result = _hasher.Verify(request.Password, user.HashedPassword);
 
@@ -94,7 +96,7 @@ namespace GNS.Services.Implementations
             }
             
             var accessToken = _tokenService.GenerateAccessToken(user);
-            var refreshToken = await _tokenService.GenerateRefreshToken(user.Id) ;
+            var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user.Id, token);
 
             return new LoginUserResponse
             {
@@ -104,12 +106,12 @@ namespace GNS.Services.Implementations
             };
         }
 
-        public async Task DeleteUser()
+        public async Task DeleteUserAsync(CancellationToken token = default)
         {
             var userId = _contextAccessor.TryGetHttpUserId();
 
-            await _usersRepository.DeleteByIdAsync(userId);
-            await _unitOfWork.SaveChangesAsync();
+            await _usersRepository.DeleteByIdAsync(userId, token);
+            await _unitOfWork.SaveChangesAsync(token);
         }
 
 

@@ -6,39 +6,61 @@ namespace GNS.Endpoints.OwnerEndploints
 {
     public static partial class OwnersEndpoints
     {
-        public static IEndpointRouteBuilder MapGamesEndpoints(this IEndpointRouteBuilder owner)
+        public static IEndpointRouteBuilder MapWithGamesEndpoints(this IEndpointRouteBuilder owner)
         {
             var games = owner.MapGroup("games");
             games.MapPost("add", AddGame);
-            games.MapPost("update", UpdateGame);
+
+            var update = games.MapGroup("update");
+            update.MapPut("title", UpdateGameTitle);
+            update.MapPut("on-pc", UpdateGameOnPC);
+            update.MapPut("on-playstation", UpdateGameOnPlayStation);
+            update.MapPut("on-xbox", UpdateGameOnXbox);
+
             games.MapDelete("delete", DeleteGame);
-            games.MapPost("connect-with-gps", ConnectGameWithGPs);
+
 
             return owner;
         }
-        public async static Task<IResult> ConnectGameWithGPs(
-            [FromBody] AddGameGPsRequest request,
-            IGameGPService service
-            )
-        {
-            await service.Add(request);
-            return Results.Ok();
-        }
+
         public static async Task<IResult> AddGame(
-            string title,
+            AddGameRequest request,
             IGameService gameService
             )
         {
-            await gameService.Add(title);
+            await gameService.AddAsync(request);
             return Results.Ok();
         }
-
-        public static async Task<IResult> UpdateGame(
-            [FromBody] UpdateGameRequest request,
+        public static async Task<IResult> UpdateGameTitle(
+            [FromBody] UpdateGameTitleRequest request,
             IGameService service
             )
         {
-            await service.Update(request);
+            await service.UpdateTitleAsync(request);
+            return Results.Ok("Game successfully updated");
+        }
+        public static async Task<IResult> UpdateGameOnPC(
+            [FromBody] UpdateGameOnRequest request,
+            IGameService service
+            )
+        {
+            await service.UpdateOnPCAsync(request);
+            return Results.Ok("Game successfully updated");
+        }
+        public static async Task<IResult> UpdateGameOnPlayStation(
+            [FromBody] UpdateGameOnRequest request,
+            IGameService service
+            )
+        {
+            await service.UpdateOnPlayStationAsync(request);
+            return Results.Ok("Game successfully updated");
+        }
+        public static async Task<IResult> UpdateGameOnXbox(
+            [FromBody] UpdateGameOnRequest request,
+            IGameService service
+            )
+        {
+            await service.UpdateOnXboxAsync(request);
             return Results.Ok("Game successfully updated");
         }
 
@@ -47,7 +69,7 @@ namespace GNS.Endpoints.OwnerEndploints
             IGameService service
             )
         {
-            await service.Delete(gameId);
+            await service.DeleteGameByIdAsync(gameId);
             return Results.Ok("Удалили");
         }
     }

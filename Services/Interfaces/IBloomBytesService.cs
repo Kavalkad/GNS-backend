@@ -4,13 +4,14 @@ namespace GNS.Services.Interfaces
 {
     public interface IBloomBytesService
     {
-        Task SaveBloomBytesAsync(
-            BloomBytesEntity bloomBytesEntity,
+        Task<Guid> SaveBloomBytesAsync(
+            string email,
+            string userName,
             CancellationToken token = default
             );
-        byte[] GetBytes(string word);
-        Task<bool> FindEmailData(string email);
-        Task<bool> FindUserNameData(string userName);
+
+        Task<bool> ContainsEmailDataAsync(string email, CancellationToken token = default);
+        Task<bool> ContainsUserNameDataAsync(string userName, CancellationToken token = default);
 
     }
 }

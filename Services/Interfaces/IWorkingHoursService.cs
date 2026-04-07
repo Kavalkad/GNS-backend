@@ -8,11 +8,11 @@ namespace GNS.Services.Interfaces
 {
     public interface IWorkingHoursService
     {
-        Task AddWorkingHours(AddWorkingHoursRequest request);
-        Task<List<WorkingHoursDto>> GetByCCId(Guid cuberClubId);
-        Task<WorkingHoursEntity?> GetByDayAndCCId(Guid cyberClubId, CustomDayOfWeek dayOfWeek);
-        Task UpdateWorkingHours(UpdateWorkingHoursRequest request);
-        Task DeleteByCCId(Guid ccId);
-        Task DeleteByWHId(Guid whId);
+        Task AddWorkingHoursAsync(AddWorkingHoursRequest request, CancellationToken token = default);
+        Task<List<WorkingHoursDto>> GetByCyberClubIdAsync(Guid cyberClubId, CancellationToken token = default);
+        //Task<WorkingHoursEntity?> GetByDayAndCCId(Guid cyberClubId, CustomDayOfWeek dayOfWeek);
+        Task UpdateWorkingHoursAsync(UpdateWorkingHoursRequest request, CancellationToken token = default);
+       // Task DeleteByCCId(Guid ccId);
+        Task DeleteByWorkingHoursIdAsync(Guid whId, CancellationToken token = default);
     }
 }

@@ -10,9 +10,9 @@ namespace GNS.Extensions
         {
             services.AddScoped<BonusFilter>();
             services.AddScoped<PenaltyFilter>();
-            services.AddScoped<PersonFilter>();
+           // services.AddScoped<PersonFilter>();
             services.AddScoped<RegisterEmployeeFilter>();
-            services.AddScoped<UpdateEmployeeFilter>();
+           // services.AddScoped<UpdateE>();
             services.AddScoped<NamesFilter>();
             services.AddScoped<EmailFilter>();
             services.AddScoped<UserNameFilter>();
@@ -20,10 +20,7 @@ namespace GNS.Extensions
             services.AddScoped<FinalValidationFilter>();
             services.AddScoped<UpdateWorkingHoursFilter>();
             services.AddScoped<BloomFilter>();
-            services.AddScoped<OwnerVerificationFilter>();
-            services.AddScoped<EmployeeVerificationFilter>();
-
-            
+ 
 
             return services;
         }

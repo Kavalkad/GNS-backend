@@ -18,21 +18,21 @@ namespace GNS.Services.Implementations
             _tokenService = tokenService;
             _usersRepository = usersRepository;
         }
-        public async Task<string> GetNewAcessToken(Guid userId)
+        public async Task<string> GetNewAcessTokenAsync(Guid userId, CancellationToken token = default)
         {
-            var user = await _usersRepository.GetByIdAsync(userId)
+            var user = await _usersRepository.GetByIdAsync(userId, token)
                 ?? throw new Exception($"User with id: {userId} not found");
+
             return _tokenService.GenerateAccessToken(user);
-
         }
-        public async Task<VerifyRefreshTokenResponse> VerifyRefreshToken(string tokenValue, Guid userId)
+        public async Task<VerifyRefreshTokenResponse> VerifyRefreshTokenAsync(string tokenValue, Guid userId, CancellationToken token = default)
         {
-            var userTokens = await _tokenService.GetByUserId(userId);
+            var userTokens = await _tokenService.GetByUserIdAsync(userId, token);
 
-            var token = userTokens.FirstOrDefault(t => t.Token.ToString() == tokenValue)
+            var userToken = userTokens.FirstOrDefault(t => t.Token.ToString() == tokenValue)
                 ?? throw new Exception($"User doesn't have refreshToken with value: {tokenValue}");
 
-            bool isValid = token.ExpiresAt > DateTime.Now && !token.IsRevoked;
+            bool isValid = userToken.ExpiresAt > DateTime.Now && !userToken.IsRevoked;
 
             if (!isValid)
             {
@@ -42,9 +42,9 @@ namespace GNS.Services.Implementations
                 };
             }
 
-            await _tokenService.RevokeRefreshToken(tokenValue);
+            await _tokenService.RevokeRefreshTokenAsync(tokenValue, token);
 
-            var newRefreshToken = await _tokenService.GenerateRefreshToken(userId);
+            var newRefreshToken = await _tokenService.GenerateRefreshTokenAsync(userId, token);
 
             return new VerifyRefreshTokenResponse
             {
@@ -53,7 +53,5 @@ namespace GNS.Services.Implementations
             };
         }
 
-
-       
     }
 }

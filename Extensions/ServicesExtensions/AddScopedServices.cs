@@ -24,7 +24,6 @@ namespace GNS.Extensions
             services.AddScoped<IWorkingHoursService, WorkingHoursService>();
             services.AddScoped<IOwnerService, OwnerService>();
             services.AddScoped<ITimeSlotsService, TimeSlotsService>();
-            services.AddScoped<IGameGPService, GameGPService>();
             services.AddScoped<IBloomBytesService, BloomBytesService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             

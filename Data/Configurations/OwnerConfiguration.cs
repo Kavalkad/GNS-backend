@@ -10,8 +10,8 @@ namespace GNS.Data.Configurations
         {
             builder
                 .HasMany(o => o.CyberClubs)
-                .WithOne(cc => cc.Owner)
-                .HasForeignKey("OwnerId");
+                .WithOne(cc => cc.Owner);
+                
                 
             builder.ToTable("Owners");
         }

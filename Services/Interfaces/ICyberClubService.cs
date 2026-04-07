@@ -6,12 +6,15 @@ namespace GNS.Services.Interfaces
 {
     public interface ICyberClubService
     {
-        Task Add(AddCyberClubRequest request);
-        Task<bool> VerifyOwner(Guid ownerId, string cyberClubName);
-        Task<List<CyberClubDto>> GetAllClubs();
-        Task<CyberClubEntity> GetByCCName(string cyberClubName);
-        Task<CyberClubDto> GetById(Guid cyberClubId);
-        Task<List<CyberClubDto>> GetByCity(string city);
-        Task<List<CyberClubDto>> GetMyCyberClubs();
+        Task AddAsync(AddCyberClubRequest request, CancellationToken token = default);
+        Task<List<CyberClubDto>> GetAllClubsAsync(CancellationToken token = default);
+        Task<CyberClubEntity> FindByCyberClubNameAsync(string cyberClubName, CancellationToken token = default);
+        Task<CyberClubDto> GetClubByIdAsync(Guid cyberClubId, CancellationToken token = default);
+        Task<List<CyberClubDto>> GetByCityAsync(string city, CancellationToken token = default);
+        Task<List<CyberClubDto>> GetOwnerCyberClubsAsync(Guid ownerId, CancellationToken token = default);
+        Task UpdateCyberClubNameAsync(UpdateCyberClubNameRequest request, CancellationToken token = default);
+        Task UpdateCyberClubCityAsync(UpdateCyberClubCityRequest request, CancellationToken token = default);
+        Task UpdateCyberClubAddressAsync(UpdateCyberClubAddressRequest request, CancellationToken token = default);
+        Task DeleteClubByIdAsync(Guid cybetClubId, CancellationToken token = default);
     }
 }

@@ -6,9 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GNS.Data.Repositories.Implementations
 {
-    public class GamingPlacesRepository : BaseRepository<GamingPlaceEntity>, IGamingPlacesRepository
+    public class GamingPlacesRepository(AppDbContext dbcontext) 
+        : BaseRepository<GamingPlaceEntity>(dbcontext), IGamingPlacesRepository
     {
-        public GamingPlacesRepository(AppDbContext dbcontext) : base(dbcontext) { }
+       
 
         
     }

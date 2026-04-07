@@ -37,7 +37,11 @@ namespace GNS.Data.Configurations
             builder
                 .HasMany(cc => cc.WorkingHours)
                 .WithOne(wh => wh.CyberClub);
-                
+
+            builder
+                .HasOne(cc => cc.Owner)
+                .WithMany(o => o.CyberClubs)
+                .HasForeignKey(cc => cc.OwnerId);
                 
                 
         }
