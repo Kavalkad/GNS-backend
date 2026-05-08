@@ -10,48 +10,38 @@ using GNS.Services.Interfaces;
 
 namespace GNS.Services.Implementations
 {
-    public class UserService : IUserService
+    public class UserService(
+        IUsersRepository usersRepository,
+        IHasher hasher,
+        ITokenService tokenService,
+        IHttpContextAccessor contextAccessor,
+        IBloomBytesService bloomBytesService,
+        IUnitOfWork unitOfWork
+        ) : IUserService
     {
-        private readonly IUsersRepository _usersRepository;
-        private readonly IHasher _hasher;
-        private readonly ITokenService _tokenService;
-        private readonly IBloomBytesService _bloomBytesService;
-        private readonly IHttpContextAccessor _contextAccessor;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUsersRepository _usersRepository = usersRepository;
+        private readonly IHasher _hasher = hasher;
+        private readonly ITokenService _tokenService = tokenService;
+        private readonly IBloomBytesService _bloomBytesService = bloomBytesService;
+        private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-
-
-        public UserService(
-            IUsersRepository usersRepository,
-            IHasher hasher,
-            ITokenService tokenService,
-            IHttpContextAccessor contextAccessor,
-            IBloomBytesService bloomBytesService,
-            IUnitOfWork unitOfWork
-
-        )
-        {
-            _usersRepository = usersRepository;
-            _hasher = hasher;
-            _tokenService = tokenService;
-            _contextAccessor = contextAccessor;
-            _bloomBytesService = bloomBytesService;
-            _unitOfWork = unitOfWork;
-        }
-        public async Task<UserEntity?> FindUserAsync(
-            Expression<Func<UserEntity, bool>> predicate,
+        public async Task<UserEntity> GetUserByIdAsync(
+            Guid userId,
             CancellationToken token = default
             )
         {
-            return await _usersRepository.FindAsync(predicate, token);     
+            return await _usersRepository.GetByIdAsync(userId, token)
+                ?? throw new EntityNotFoundException("user", userId.ToString());     
+        }
+        public async Task<UserEntity?> FindByExpression(Expression<Func<UserEntity, bool>> predicate, CancellationToken token = default)
+        {
+            return await _usersRepository.FindAsync(predicate, token);
+                
         }
 
         public async Task RegisterAsync(RegisterUserRequest request, CancellationToken token = default)
         {
-
-            //var isUniqueEmail = await _bloomBytesService.FindEmailData(request.Email);
-            //var isUniqueUserName = await _bloomBytesService.FindUserNameData(request.UserName);
-
             try
             {
                 await _unitOfWork.BeginTransactionAsync(token);
@@ -68,18 +58,21 @@ namespace GNS.Services.Implementations
                     bloomBytesId: bloomBytesId
                 );
 
-                await _usersRepository.AddAsync(userEntity);
+                await _usersRepository.AddAsync(userEntity, token);
 
                 await _unitOfWork.SaveChangesAsync(token);
                 await _unitOfWork.CommitTransactionAsync(token);
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                Results.InternalServerError("Operation failed. Please retry again." + e.Message);
+                await _unitOfWork.RollbackTransactionAsync(token);
+                throw;
             }
-
+            finally
+            {
+                await _unitOfWork.DisposeAsync();
+            }
         }
 
         public async Task<LoginUserResponse> LoginAsync(LoginUserRequest request, CancellationToken token = default)
@@ -92,7 +85,7 @@ namespace GNS.Services.Implementations
 
             if (!result)
             {
-                throw new Exception("Wrong password");
+                throw new UnauthorizedAccessException();
             }
             
             var accessToken = _tokenService.GenerateAccessToken(user);
@@ -102,7 +95,8 @@ namespace GNS.Services.Implementations
             {
                 UserName = user.UserName,
                 AccessToken = accessToken,
-                RefreshToken = refreshToken.Token.ToString()
+                RefreshToken = refreshToken.Token.ToString(),
+                Role = user.Role
             };
         }
 

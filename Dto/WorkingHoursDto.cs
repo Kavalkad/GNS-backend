@@ -5,17 +5,10 @@ namespace GNS.Dto
 {
     public class WorkingHoursDto
     {
+        [Required] public Guid Id { get; set; }
         [Required] public string DayOfWeek { get; set; } = string.Empty;
-        [Required] public string StartHour { get; set; } = string.Empty;
-        [Required] public string EndHour { get; set; } = string.Empty;
-        [Required] public string IsOpen { get; set; } = string.Empty;
-
-        public WorkingHoursDto(WorkingHoursEntity wh)
-        {
-            DayOfWeek = wh.DayOfWeek.ToString();
-            StartHour = wh.StartHour.ToString();
-            EndHour = wh.EndHour.ToString();
-            IsOpen = wh.IsOpen ? "Working" : "CyberClub wanna sleep zzz....."; 
-        }
+        [Required] public TimeOnly StartHour { get; set; }
+        [Required] public TimeOnly EndHour { get; set; } 
+        [Required] public bool IsOpen { get; set; } 
     }
 }

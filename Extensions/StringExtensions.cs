@@ -15,6 +15,10 @@ namespace GNS.Extensions
         {
             return password.Any(c => !char.IsLetterOrDigit(c) && !char.IsPunctuation(c));
         }
+        public static bool IsNotUserName(this string userName)
+        {
+            return userName.Any(un => !char.IsLetterOrDigit(un));
+        }
         public static bool IsNotName(this string name)
         {
             return name.Any(c => !char.IsLetter(c));

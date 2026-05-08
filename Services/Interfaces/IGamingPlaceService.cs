@@ -1,5 +1,6 @@
 using GNS.Contracts;
 using GNS.Contracts.Requests;
+using GNS.Contracts.Requests.Implementations;
 using GNS.Data.Entities;
 using GNS.Dto;
 using GNS.Enums;
@@ -8,10 +9,13 @@ namespace GNS.Services.Interfaces
 {
     public interface IGamingPlaceService
     {
-        Task AddGamingPlaces(AddGamingPlacesRequest request, CancellationToken token = default);
-        Task<List<GamingPlaceDto>> GetCCGamingPlaces(Guid cyberClubId, CancellationToken token = default);
-        //Task UpdateCCGamingPlaces(UpdateCCGamingPlacesRequest request);
-        Task DeleteGamingPlaces(DeleteGamingPlacesRequest request, CancellationToken token = default);
+        Task AddGamingPlacesAsync(CreateGamingPlacesRequest request, CancellationToken token = default);
+        Task<GamingPlaceEntity> GetByIdAsync(Guid gamingPlaceId, CancellationToken token = default);
+        Task<GamingPlaceEntity> GetByIdWithDetails(Guid gamingPlaceId, CancellationToken token = default);
+        Task<List<GamingPlaceDto>> GetCCGamingPlacesAsync(Guid cyberClubId, CancellationToken token = default);
+        Task UpdateGamingPlacePricePerHourAsync(UpdateGamingPlacePricePerHourRequest request, CancellationToken token = default);
+        Task UpdateGamingPlaceNumberAsync(UpdateGamingPlaceNumberRequest request, CancellationToken token = default);
+        Task DeleteGamingPlaceAsync(Guid gamingPlaceId, CancellationToken token = default);
         // Task<List<GamingPlaceEntity>> GetByEquipment(Equipment equipment);
     }
 }

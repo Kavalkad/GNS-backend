@@ -7,20 +7,16 @@ using GNS.Services.Interfaces;
 
 namespace GNS.Services.Implementations
 {
-    public class GameService : IGameService
+    public class GameService(
+        IUnitOfWork unitOfWork,
+        IGamesRepository gamesRepository,
+        IMapper mapper) : IGameService
     {
-        private readonly IGamesRepository _gamesRepository;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IGamesRepository _gamesRepository = gamesRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper = mapper;
 
-        public GameService(
-            IGamesRepository gamesRepository,
-            IUnitOfWork unitOfWork)
-        {
-            _gamesRepository = gamesRepository;
-            _unitOfWork = unitOfWork;
-        }
-
-        public async Task AddAsync(AddGameRequest request, CancellationToken token = default)
+        public async Task AddAsync(CreateGameRequest request, CancellationToken token = default)
         {
             var gameEntity = new GameEntity
             {
@@ -35,20 +31,16 @@ namespace GNS.Services.Implementations
 
         public async Task<List<GameDto>> GetByTitleFilterAsync(string filter, CancellationToken token = default)
         {
-            var games = await _gamesRepository.GetByExpressionAsync(g => g.Title.Contains(filter), token);
+            var games = await _gamesRepository.GetByExpressionAsync(g => g.Title.Contains(filter), token)
+                ?? throw new EntityNotFoundException("games", filter);
 
-            return games.Select(g => new GameDto(g))
-                .OrderBy(g => g.Title)
-                .ToList();
+            return _mapper.MapToGameDto(games);
         }
         public async Task UpdateTitleAsync(UpdateGameTitleRequest request, CancellationToken token = default)
         {
-            if (!Guid.TryParse(request.GameId, out Guid gameId))
-            {
-                throw new IncorrectGuidException(request.GameId);
-            }
+            var gameId = request.GameId;
             var game = await _gamesRepository.FindAsync(g => g.Id == gameId, token)
-                ?? throw new EntityNotFoundException("Game", request.GameId);
+                ?? throw new EntityNotFoundException("Game", gameId.ToString());
 
             game.Title = request.NewTitle;
 
@@ -57,12 +49,9 @@ namespace GNS.Services.Implementations
         }
         public async Task UpdateOnPCAsync(UpdateGameOnRequest request, CancellationToken token = default)
         {
-            if (!Guid.TryParse(request.GameId, out Guid gameId))
-            {
-                throw new IncorrectGuidException(request.GameId);
-            }
+            var gameId = request.GameId;
             var game = await _gamesRepository.FindAsync(g => g.Id == gameId, token)
-                ?? throw new EntityNotFoundException("Game", request.GameId);
+                ?? throw new EntityNotFoundException("Game", gameId.ToString());
 
             game.OnPc = request.NewOnValue;
 
@@ -71,12 +60,9 @@ namespace GNS.Services.Implementations
         }
         public async Task UpdateOnPlayStationAsync(UpdateGameOnRequest request, CancellationToken token = default)
         {
-            if (!Guid.TryParse(request.GameId, out Guid gameId))
-            {
-                throw new IncorrectGuidException(request.GameId);
-            }
+            var gameId = request.GameId;
             var game = await _gamesRepository.FindAsync(g => g.Id == gameId, token)
-                ?? throw new EntityNotFoundException("Game", request.GameId);
+                ?? throw new EntityNotFoundException("Game", gameId.ToString());
 
             game.OnPlayStation = request.NewOnValue;
 
@@ -85,12 +71,9 @@ namespace GNS.Services.Implementations
         }
         public async Task UpdateOnXboxAsync(UpdateGameOnRequest request, CancellationToken token = default)
         {
-            if (!Guid.TryParse(request.GameId, out Guid gameId))
-            {
-                throw new IncorrectGuidException(request.GameId);
-            }
+            var gameId = request.GameId;
             var game = await _gamesRepository.FindAsync(g => g.Id == gameId, token)
-                ?? throw new EntityNotFoundException("Game", request.GameId);
+                ?? throw new EntityNotFoundException("Game", gameId.ToString());
 
             game.OnXbox = request.NewOnValue;
 

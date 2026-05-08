@@ -5,20 +5,11 @@ namespace GNS.Dto
     public record class CyberClubDto
     {
         public Guid Id { get; set; }
-        public string Name { get; }
-        public string City { get; }
-        public string Address { get; }
-        public int EmployeesCount { get; }
-        public int GamingPlacesCount { get; }
-        public CyberClubDto(CyberClubEntity cc)
-        {
-            Id = cc.Id;
-            Name = cc.Name;
-            City = cc.City;
-            Address = cc.Address;
-            EmployeesCount = cc.Employees.Count;
-            GamingPlacesCount = cc.GamingPlaces.Count;
-        }
+        public string Name { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+
+
     };
 
 }

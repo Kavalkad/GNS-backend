@@ -6,7 +6,7 @@ namespace GNS.Services.Interfaces
 {
     public interface IGameService
     {
-        Task AddAsync(AddGameRequest request, CancellationToken token = default);
+        Task AddAsync(CreateGameRequest request, CancellationToken token = default);
         Task<List<GameDto>> GetByTitleFilterAsync(string filter, CancellationToken token = default);
         Task UpdateTitleAsync(UpdateGameTitleRequest request, CancellationToken token = default);
         Task UpdateOnPCAsync(UpdateGameOnRequest request, CancellationToken token = default);

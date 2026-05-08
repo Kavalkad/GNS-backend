@@ -1,6 +1,6 @@
 namespace GNS.Exceptions
 {
-    public class IncorrectRoleNameException: IncorrectValueException
+    public class IncorrectRoleNameException: IncorrectFormatException
     {
         public IncorrectRoleNameException(
             string enteredRoleName,

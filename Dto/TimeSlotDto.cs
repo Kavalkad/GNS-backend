@@ -1,14 +1,9 @@
 namespace GNS.Dto
 {
-    public class TimeSlotDto
+    public record class TimeSlotDto
     {
-        public DateTime DateTimeStart { get; set; }
-        public DateTime DateTimeEnd { get; set; }
+        public TimeOnly Start { get; set; }
+        public TimeOnly End { get; set; }
 
-        public TimeSlotDto(DateTime dateTimeStart, DateTime dateTimeEnd)
-        {
-            DateTimeStart = dateTimeStart;
-            DateTimeEnd = dateTimeEnd;
-        }
     }
 }

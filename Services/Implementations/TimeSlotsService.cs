@@ -1,46 +1,53 @@
 using GNS.Contracts;
 using GNS.Contracts.Requests;
+using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Dto;
 using GNS.Enums;
+using GNS.Exceptions;
 using GNS.Extensions;
 using GNS.Interfaces;
 using GNS.Services.Interfaces;
 
 namespace GNS.Services.Implementations
 {
-    public class TimeSlotsService : ITimeSlotsService
+    public class TimeSlotsService(
+        IWorkingHoursService workingHoursService,
+        IGamingPlaceService gamingPlaceService,
+        IOrderService orderService,
+        IMapper mapper
+        ) : ITimeSlotsService
     {
-        private readonly IWorkingHoursService _workingHoursService;
-        private readonly IOrderService _orderService;
+        private readonly IWorkingHoursService _workingHoursService = workingHoursService;
+        private readonly IGamingPlaceService _gamingPlaceService = gamingPlaceService;
+        private readonly IOrderService _orderService = orderService;
+        private readonly IMapper _mapper = mapper;
 
-        public TimeSlotsService(
-            IWorkingHoursService workingHoursService,
-            IOrderService orderService
-        )
-        {
-            _workingHoursService = workingHoursService;
-            _orderService = orderService;
-        }
 
         public async Task<List<TimeSlotDto>> GetUnAvailableSlotsAsync(
-            Guid cyberClubId,
             Guid gamingPlaceId,
             DateTime date,
             CancellationToken token = default
         )
         {
-            var dayOfWeek = date.ParseToCustomDayOfWeek();
-            var workingHours = await _workingHoursService.GetByCyberClubIdAsync(cyberClubId, token)
-                ?? throw new Exception($"WorkingHours for day: {dayOfWeek} not found.");
-            var requiredWorkingHours = workingHours.FirstOrDefault(wh => wh.DayOfWeek == dayOfWeek.ToString())
-                ?? throw new Exception("TimeSlotService: GetUnavailableSlotsAsync line 37");
-            var isOpen = bool.Parse(requiredWorkingHours.IsOpen);
 
-            if (!isOpen)
+            var dayOfWeek = date.Date.ParseToCustomDayOfWeek();
+
+            var gamingPlace = await _gamingPlaceService.GetByIdAsync(gamingPlaceId, token);
+
+            var cyberClubId = gamingPlace.CyberClubId;
+            var workingHours = await _workingHoursService.GetByCyberClubIdAsync(cyberClubId, token);
+
+            var stringDayOfWeek = Enum.GetName(dayOfWeek);
+
+            var requiredWorkingHours = workingHours.FirstOrDefault(wh => wh.DayOfWeek == stringDayOfWeek)
+                ?? throw new EntityNotFoundException("WorkingHours", $"day of week: {dayOfWeek}");
+
+
+
+            if (requiredWorkingHours.IsOpen)
             {
-                Results.Problem($"At the date: {date} cyber club not found.");
-                return null;
+                return _mapper.MapToTimeSlotsDtoList(requiredWorkingHours);
             }
 
             var gamingPlaceDateOrders = await _orderService.GetByDateAndGamingPlaceAsync(
@@ -50,20 +57,12 @@ namespace GNS.Services.Implementations
             );
 
             var unavailableTimeSlots = gamingPlaceDateOrders
-                .Select(o => new TimeSlotDto(o.DateTimeStart, o.DateTimeEnd))
-                .OrderBy(ts => ts.DateTimeStart)
+                .Select(o => new TimeSlotDto { Start = TimeOnly.FromDateTime(o.DateTimeStart), End = TimeOnly.FromDateTime(o.DateTimeEnd) })
+                .OrderBy(ts => ts.Start)
                 .ToList();
-
             return unavailableTimeSlots;
+
         }
 
-
-        public async Task<List<TimeSlotDto>> GetAvailableSlotsAsync(GetAvailableTimeSlotsRequest request)
-        {
-            return await GetUnAvailableSlotsAsync(
-                request.CyberClubId,
-                request.GamingPlaceId,
-                request.Date);
-        }
     }
 }

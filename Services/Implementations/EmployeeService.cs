@@ -1,4 +1,3 @@
-using GNS.Extensions;
 using GNS.Dto;
 using GNS.Enums;
 using GNS.Services.Interfaces;
@@ -6,51 +5,40 @@ using GNS.Data.Repositories.Interfaces;
 using GNS.Contracts.Requests;
 using GNS.Contracts.Responses;
 using GNS.Data.Entities;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
 using GNS.Exceptions;
+using Microsoft.AspNetCore.Authentication;
 
 namespace GNS.Services.Implementations
 {
-    public class EmployeeService : IEmployeeService
+    public class EmployeeService(
+        IEmployeesRepository employeesRepository,
+        IHasher hasher,
+        ITokenService tokenService,
+        ICyberClubService cyberClubService,
+        IUnitOfWork unitOfWork,
+        IBloomBytesService bloomBytesService,
+        IMapper mapper
+            ) : IEmployeeService
     {
-        private readonly IEmployeesRepository _employeesRepository;
-        private readonly IHasher _hasher;
-        private readonly ITokenService _tokenService;
-        private readonly IHttpContextAccessor _contextAccessor;
-        private readonly ICyberClubService _cyberClubService;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IBloomBytesService _bloomBytesService;
+        private readonly IEmployeesRepository _employeesRepository = employeesRepository;
+        private readonly IHasher _hasher = hasher;
+        private readonly ITokenService _tokenService = tokenService;
+        private readonly ICyberClubService _cyberClubService = cyberClubService;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IBloomBytesService _bloomBytesService = bloomBytesService;
+        private readonly IMapper _mapper = mapper;
 
-        public EmployeeService(
-            IEmployeesRepository employeesRepository,
-            IHasher hasher,
-            ITokenService tokenService,
-            IHttpContextAccessor contextAccessor,
-            ICyberClubService cyberClubService,
-            IUnitOfWork unitOfWork,
-            IBloomBytesService bloomBytesService
-            )
-        {
-            _employeesRepository = employeesRepository;
-            _hasher = hasher;
-            _tokenService = tokenService;
-            _contextAccessor = contextAccessor;
-            _cyberClubService = cyberClubService;
-            _unitOfWork = unitOfWork;
-            _bloomBytesService = bloomBytesService;
-        }
         public async Task<LoginEmployeeResponse> LoginAsync(LoginEmployeeRequest request, CancellationToken token = default)
         {
             var employee = await _employeesRepository.FindAsync(e => e.Email == request.Email, token)
                 ?? throw new EntityNotFoundException("Employee", request.Email);
 
-            bool isVerified = _hasher.Verify(request.Password, employee.HashedPassword)
+            bool result = _hasher.Verify(request.Password, employee.HashedPassword)
                 && _hasher.Verify(request.SecretWord, employee.HashedSecretWord);
 
-            if (!isVerified)
+            if (!result)
             {
-                //// Results.Unauthorized();
-                throw new Exception("You entered wrong employee data");
+                throw new AuthenticationFailureException("Wrong password or secret word");
             }
 
             var accessToken = _tokenService.GenerateAccessToken(employee);
@@ -61,24 +49,15 @@ namespace GNS.Services.Implementations
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken.Token.ToString(),
-                Role = role
+                FirstName = employee.FirstName,
+                LastName = employee.LastName
             };
         }
 
         public async Task RegisterAsync(RegisterEmployeeRequest request, CancellationToken token = default)
         {
-
-
-            var cyberClub = await _cyberClubService.FindByCyberClubNameAsync(request.CyberClubName, token)
-                ?? throw new EntityNotFoundException("CyberClub", request.CyberClubName);
-
-            // Дядя, а ты точно овнер этого клуба
-            var ownerId = _contextAccessor.TryGetHttpUserId();
-            if (cyberClub.OwnerId != ownerId)
-            {
-                Results.Unauthorized();
-                return;
-            }
+            var cyberClub = await _cyberClubService.GetClubByIdAsync(request.CyberClubId, token)
+                ?? throw new EntityNotFoundException("CyberClub", request.CyberClubId.ToString());
 
             try
             {
@@ -116,78 +95,55 @@ namespace GNS.Services.Implementations
                 await _unitOfWork.RollbackTransactionAsync(token);
                 Results.InternalServerError("Transaction failed. " + ex.Message);
             }
-
-
         }
-        public async Task<List<EmployeeDto>> GetAllAsync(CancellationToken token = default)
+
+       
+        public async Task<EmployeeEntity> GetByIdAsync(Guid employeeId, CancellationToken token = default)
         {
-            var employees = await _employeesRepository.GetAllAsync(token)
-                ?? throw new Exception("GetAllEmployees exception");
-            return employees
-                .Select(e => new EmployeeDto(e))
-                .OrderByDescending(e => e.RoleName)
-                .ToList();
+            return await _employeesRepository.GetByIdAsync(employeeId, token)
+                ?? throw new EntityNotFoundException("employee", employeeId.ToString());
         }
         public async Task<List<EmployeeDto>> GetWithBonusAsync(CancellationToken token = default)
         {
-            var employees = await GetAllAsync(token)
-                ?? throw new Exception("GetAllEmployees exception");
-            return employees.Where(e => e.Bonus != 0).ToList();
+            var employees = await _employeesRepository.GetByExpressionAsync(e => e.Bonus > 0, token)
+                ?? throw new EntityNotFoundException("employee", "with bonus");
+
+            return _mapper.MapToEmployeeDto(employees);
 
         }
         public async Task<List<EmployeeDto>> GetWithPenaltyAsync(CancellationToken token = default)
         {
-            var employees = await GetAllAsync(token)
-                ?? throw new Exception("GetAllEmployees exception");
-            return employees.Where(e => e.Penalty != 0).ToList();
+            var employees = await _employeesRepository.GetByExpressionAsync(e => e.Penalty > 0, token)
+                ?? throw new EntityNotFoundException("employee", "with penalty");
+
+            return _mapper.MapToEmployeeDto(employees);
 
         }
-        public async Task<List<EmployeeDto>> GetByCyberClubIdAsync(string cyberClubId, CancellationToken token = default)
+        public async Task<List<EmployeeDto>> GetByCyberClubIdAsync(Guid cyberClubId, CancellationToken token = default)
         {
+            var employees = await _employeesRepository.GetByExpressionAsync(e => e.CyberClubId == cyberClubId, token)
+                ?? throw new EntityNotFoundException("employee", $"cyberClubId: {cyberClubId}");
 
-            if (!Guid.TryParse(cyberClubId, out Guid resultId))
-            {
-                throw new IncorrectGuidException(cyberClubId);
-            }
-
-            var employees = await _employeesRepository.GetByExpressionAsync(e => e.CyberClubId == resultId, token);
-
-            return employees
-                .Select(e => new EmployeeDto(e))
-                .ToList();
+            return _mapper.MapToEmployeeDto(employees);
         }
 
-
-        /* public async Task<List<EmployeeDto>> GetByCyberClubNameAsync(string cyberClubName, CancellationToken token = default)
-         {
-             var cyberClub = await _cyberClubService.G
-             var employees = await _employeesRepository.GetByExpressionAsync(e => e.CyberClub.Name == cyberClubName, token);
-
-             return employees
-                 .Select(e => new EmployeeDto(e))
-                 .ToList();
-         } 
-         */
         public async Task<EmployeeDto> GetByNamesAsync(string firstName, string lastName, CancellationToken token = default)
         {
             var employee = await _employeesRepository.FindAsync(
                 e => e.FirstName == firstName && e.LastName == lastName, token)
-                    ?? throw new EntityNotFoundException("Employee", "Костыль");
+                    ?? throw new EntityNotFoundException("Employee", $"firstName: {firstName}, lastName: {lastName}");
 
-            return new EmployeeDto(employee);
+            return _mapper.MapToEmployeeDto(employee);
         }
         public async Task UpdateFirstNameAsync(
             UpdateEmployeeNameRequest request,
             CancellationToken token = default
         )
         {
-            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
-            {
-                throw new IncorrectGuidException(request.EmployeeId);
-            }
+            var employeeId = request.EmployeeId;
 
             var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
-                ?? throw new EntityNotFoundException("Employee", request.EmployeeId);
+                ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
 
             employee.FirstName = request.Name;
 
@@ -199,13 +155,10 @@ namespace GNS.Services.Implementations
             CancellationToken token = default
         )
         {
-            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
-            {
-                throw new IncorrectGuidException(request.EmployeeId);
-            }
+            var employeeId = request.EmployeeId;
 
             var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
-                ?? throw new EntityNotFoundException("Employee", request.EmployeeId);
+                ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
 
             employee.LastName = request.Name;
 
@@ -217,17 +170,14 @@ namespace GNS.Services.Implementations
             CancellationToken token = default
         )
         {
-            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
-            {
-                throw new IncorrectGuidException(request.EmployeeId);
-            }
+            var employeeId = request.EmployeeId;
             if (!Enum.TryParse(request.Name, out Role role))
             {
                 throw new IncorrectRoleNameException(request.Name);
             }
 
             var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
-                ?? throw new EntityNotFoundException("Employee", request.EmployeeId);
+                ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
 
             employee.Role = role;
 
@@ -239,16 +189,13 @@ namespace GNS.Services.Implementations
             CancellationToken token = default
         )
         {
-            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
-            {
-                throw new IncorrectGuidException(request.EmployeeId);
-            }
+            var employeeId = request.EmployeeId;
 
             var cyberClub = await _cyberClubService.FindByCyberClubNameAsync(request.Name, token)
                 ?? throw new EntityNotFoundException("CyberClub", request.Name);
 
-            var employee = await _employeesRepository.FindAsync(e => e.Id == employeeId, token)
-                ?? throw new EntityNotFoundException("Employee", request.EmployeeId);
+           var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
+                ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
 
             employee.CyberClubId = cyberClub.Id;
 
@@ -264,14 +211,10 @@ namespace GNS.Services.Implementations
             await _employeesRepository.SetZeroPenaltiesAsync(token);
         }
 
-        public async Task DeleteAsync(DeleteEmployeeRequest request, CancellationToken token = default)
+        public async Task DeleteAsync(Guid employeeId, CancellationToken token = default)
         {
-            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
-            {
-                throw new IncorrectGuidException(request.EmployeeId);
-            }
             var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
-                ?? throw new EntityNotFoundException("Employee", request.EmployeeId);
+                ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
 
             _employeesRepository.Delete(employee);
             await _unitOfWork.SaveChangesAsync(token);
@@ -279,15 +222,11 @@ namespace GNS.Services.Implementations
 
         public async Task GiveBonusAsync(GiveBonusRequest request, CancellationToken token = default)
         {
-            var id = _contextAccessor.TryGetHttpUserId();
-
-            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
-            {
-                throw new IncorrectGuidException(request.EmployeeId);
-            }
+            var employeeId = request.EmployeeId;
 
             var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
-                ?? throw new EntityNotFoundException("Employee", request.EmployeeId);
+                ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
+
             employee.Bonus = request.Bonus;
 
             _employeesRepository.Update(employee);
@@ -295,15 +234,11 @@ namespace GNS.Services.Implementations
         }
         public async Task GivePenaltyAsync(GivePenaltyRequest request, CancellationToken token = default)
         {
-            // var ownerId = _contextAccessor.TryGetHttpUserId();
-
-            if (!Guid.TryParse(request.EmployeeId, out Guid employeeId))
-            {
-                throw new IncorrectGuidException(request.EmployeeId);
-            }
+            var employeeId = request.EmployeeId;
 
             var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
-                ?? throw new EntityNotFoundException("Employee", request.EmployeeId);
+                ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
+
             employee.Penalty = request.Penalty;
 
             _employeesRepository.Update(employee);

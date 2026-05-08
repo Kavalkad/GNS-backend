@@ -1,6 +1,3 @@
-
-
-using GNS.Services;
 using GNS.Services.Implementations;
 using GNS.Services.Interfaces;
 
@@ -26,6 +23,10 @@ namespace GNS.Extensions
             services.AddScoped<ITimeSlotsService, TimeSlotsService>();
             services.AddScoped<IBloomBytesService, BloomBytesService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IClaimsBuilder, ClaimsBuilder>();
+            services.AddScoped<IClaimService, ClaimService>();
+            services.AddScoped<ICookieService, CookieService>();
+            services.AddScoped<IMapper, Mapper>();
             
             return services;
         }

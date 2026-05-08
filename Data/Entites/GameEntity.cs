@@ -1,5 +1,3 @@
-using GNS.Enums;
-
 namespace GNS.Data.Entities
 {
     public class GameEntity : BaseEntity

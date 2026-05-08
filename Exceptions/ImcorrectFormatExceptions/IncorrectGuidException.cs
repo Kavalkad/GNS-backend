@@ -1,6 +1,6 @@
 namespace GNS.Exceptions
 {
-    public class IncorrectGuidException: IncorrectValueException
+    public class IncorrectGuidException: IncorrectFormatException
     {
        
         public IncorrectGuidException(

@@ -12,18 +12,8 @@ namespace GNS.Dto
         public string RoleName { get; set; } = string.Empty;
         public decimal Bonus { get; set; }
         public decimal Penalty { get; set; }
-        public string CyberClubName { get; set; } = string.Empty;
+       
 
-        public EmployeeDto(EmployeeEntity e)
-        {
-            Id = e.Id;
-            FirstName = e.FirstName;
-            LastName = e.LastName;
-            Salary = e.Salary;
-            Bonus = e.Bonus;
-            Penalty = e.Penalty;
-            RoleName = Enum.GetName(e.Role);
-            CyberClubName = e.CyberClub.Name;
-        }
+        
     }
 }

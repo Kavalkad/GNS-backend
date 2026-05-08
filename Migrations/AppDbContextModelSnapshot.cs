@@ -44,7 +44,7 @@ namespace backend.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasMaxLength(256)
+                        .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("City")
@@ -62,7 +62,8 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name");
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.HasIndex("OwnerId");
 
@@ -129,14 +130,24 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CyberClubName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("DateTimeEnd")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateTimeStart")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Equipment")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("GamingPlaceId")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("GamingPlaceNumber")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("OrderStatus")
                         .HasColumnType("INTEGER");

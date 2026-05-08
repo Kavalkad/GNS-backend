@@ -19,31 +19,25 @@ namespace GNS.Endpoints
             var orders = admin.MapGroup("orders");
             
             orders.MapGet("get-for-today", GetTodaysOrders);
-            orders.MapGet("throwException", ThrowException);
+
             orders.MapGet("get-by-user-email", GetUserOrdersByEmail)
                 .AddEndpointFilter<EmailFilter>()
-                .AddEndpointFilter<FinalValidationFilter>();
+                .AddEndpointFilter<TerminalValidationFilter>();
 
             orders.MapGet("get-by-username", GetOrdersByUserName)
-                .AddEndpointFilter<UserNameFilter>()
-                .AddEndpointFilter<FinalValidationFilter>(); ;
+                .AddEndpointFilter<QueryUserNameFilter>()
+                .AddEndpointFilter<TerminalValidationFilter>(); ;
 
             orders.MapPost("update-status", UpdateOrderStatus)
+                .AddEndpointFilter<EmployeeAccessToOrderFilter>()
                 .AddEndpointFilter<OrderStatusFilter>()
-                .AddEndpointFilter<FinalValidationFilter>();
+                .AddEndpointFilter<TerminalValidationFilter>();
 
 
             return app;
         }
          
-        public static Task<IResult> ThrowException()
-        {
-            throw new Exception("Exception thrown");
-
-        }
-        public static async Task<IResult> GetTodaysOrders(
-            IOrderService service
-        )
+        public static async Task<IResult> GetTodaysOrders(IOrderService service)
         {
             var orders = await service.GetTodaysOrdersAsync();
 

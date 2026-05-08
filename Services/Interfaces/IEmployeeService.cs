@@ -1,6 +1,7 @@
 using GNS.Dto;
 using GNS.Contracts.Requests;
 using GNS.Contracts.Responses;
+using GNS.Data.Entities;
 
 namespace GNS.Services.Interfaces
 {
@@ -10,11 +11,11 @@ namespace GNS.Services.Interfaces
         Task<LoginEmployeeResponse> LoginAsync(LoginEmployeeRequest request, CancellationToken token = default);
 
         //Task DeleteById(Guid id);
-        Task<List<EmployeeDto>> GetAllAsync(CancellationToken token = default);
+        Task<EmployeeEntity> GetByIdAsync(Guid employeeId, CancellationToken token = default);
         Task<EmployeeDto> GetByNamesAsync(string firstName, string lastName, CancellationToken token = default);
         Task<List<EmployeeDto>> GetWithBonusAsync(CancellationToken token = default);
         Task<List<EmployeeDto>> GetWithPenaltyAsync(CancellationToken token = default);
-        Task<List<EmployeeDto>> GetByCyberClubIdAsync(string cyberClubId, CancellationToken token = default);
+        Task<List<EmployeeDto>> GetByCyberClubIdAsync(Guid cyberClubId, CancellationToken token = default);
        // Task<List<EmployeeDto>> GetByCyberClubNameAsync(string cyberClubName, CancellationToken token = default);
         Task UpdateFirstNameAsync(
             UpdateEmployeeNameRequest request,
@@ -32,7 +33,7 @@ namespace GNS.Services.Interfaces
             UpdateEmployeeNameRequest request,
             CancellationToken token = default
         );
-        Task DeleteAsync(DeleteEmployeeRequest request, CancellationToken token = default);
+        Task DeleteAsync(Guid employeeId, CancellationToken token = default);
         Task SetZeroBonusesAsync(CancellationToken token = default);
         Task SetZeroPenaltiesAsync(CancellationToken token = default);
         Task GiveBonusAsync(GiveBonusRequest request, CancellationToken token = default);

@@ -1,6 +1,6 @@
 namespace GNS.Exceptions
 {
-    public class IncorrectBoolException : IncorrectValueException
+    public class IncorrectBoolException : IncorrectFormatException
     {
         public IncorrectBoolException(
             string enteredValue,

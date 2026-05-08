@@ -13,30 +13,25 @@ using GNS.Exceptions;
 
 namespace GNS.Services.Implementations
 {
-    public class TokensService : ITokenService
+    public class TokensService(
+        IOptions<JwtOptions> options,
+        IRefreshTokensRepository refreshTokensRepository,
+        IUnitOfWork unitOfWork,
+        IClaimService claimService
+            ) : ITokenService
     {
-        private readonly JwtOptions _jwtOptions;
-        private readonly IRefreshTokensRepository _refreshTokensRepository;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public TokensService(
-            IOptions<JwtOptions> options,
-            IRefreshTokensRepository refreshTokensRepository,
-            IUnitOfWork unitOfWork
-            )
-        {
-            _jwtOptions = options.Value;
-            _refreshTokensRepository = refreshTokensRepository;
-            _unitOfWork = unitOfWork;
-        }
+        private readonly JwtOptions _jwtOptions = options.Value;
+        private readonly IRefreshTokensRepository _refreshTokensRepository = refreshTokensRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IClaimService _claimService = claimService;
 
         public string GenerateAccessToken(IClaimsGeneratable entity)
         {
-            var claims = ClaimsBuilder.GenerateClaims(entity);
+            var claims = _claimService.GenerateClaims(entity);
             var signingCredentials = new SigningCredentials(
                                         new SymmetricSecurityKey(
                                            Encoding.UTF8.GetBytes(_jwtOptions.SecretKey)),
-                                        SecurityAlgorithms.HmacSha256
+                                                SecurityAlgorithms.HmacSha256
                                         );
 
             var token = new JwtSecurityToken(
@@ -69,7 +64,7 @@ namespace GNS.Services.Implementations
 
         public async Task<List<RefreshTokenEntity>> GetByUserIdAsync(Guid userId, CancellationToken token = default)
         {
-            return await _refreshTokensRepository.GetByExpressionAsync(u => u.Id == userId);
+            return await _refreshTokensRepository.GetByExpressionAsync(u => u.Id == userId, token);
         }
 
         public async Task RevokeRefreshTokenAsync(string refreshTokenValue, CancellationToken token = default)

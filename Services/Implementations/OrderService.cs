@@ -7,127 +7,105 @@ using GNS.Data.Entities;
 using GNS.Enums;
 using GNS.Exceptions;
 
+
 namespace GNS.Services.Implementations
 {
-    public class OrderService : IOrderService
+    public class OrderService(
+        IHttpContextAccessor contextAccessor,
+        IOrdersRepository ordersRepository,
+        IUserService userService,
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IGamingPlaceService gamingPlaceService) : IOrderService
     {
-        private readonly IHttpContextAccessor _contextAccessor;
-        private readonly IOrdersRepository _ordersRepository;
-        private readonly IUserService _userService;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
+        private readonly IOrdersRepository _ordersRepository = ordersRepository;
+        private readonly IUserService _userService = userService;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper = mapper;
+        private readonly IGamingPlaceService _gamingPlaceService = gamingPlaceService;
 
-        public OrderService(
-            IHttpContextAccessor contextAccessor,
-            IOrdersRepository ordersRepository,
-            IUserService userService,
-            IUnitOfWork unitOfWork
-)
+        public async Task<OrderDto> CreateOrderAsync(CreateOrderRequest request, CancellationToken token = default)
         {
-            _contextAccessor = contextAccessor;
-            _ordersRepository = ordersRepository;
-            _userService = userService;
-            _unitOfWork = unitOfWork;
-        }
-        public async Task<TimeSlotDto> CreateOrderAsync(CreateOrderRequest request, CancellationToken token = default)
-        {
-
-            if (!Guid.TryParse(request.GamingPlaceId, out Guid gamingPlaceId))
-            {
-                throw new IncorrectGuidException(request.GamingPlaceId);
-            }
-            if (!DateTime.TryParse(request.DateTimeStart, out DateTime dtStart))
-            {
-                throw new Exception("Invalid start time value");
-            }
-
-            if (!DateTime.TryParse(request.DateTimeEnd, out DateTime dtEnd))
-            {
-                throw new Exception("Invalid end time value");
-            }
-
-            if (dtEnd - dtStart != TimeSpan.FromHours(1))
-            {
-                throw new Exception("You can order only 1 hour");
-            }
+            var gamingPlaceId = request.GamingPlaceId;
+            var gamingPlace = await _gamingPlaceService.GetByIdWithDetails(gamingPlaceId, token);
+            var totalSum = (request.DateTimeEnd.Hour - request.DateTimeStart.Hour) * gamingPlace.PricePerHour;
 
             var userId = _contextAccessor.TryGetHttpUserId();
 
             var order = new OrderEntity
             {
                 UserId = userId,
-                DateTimeStart = dtStart,
-                DateTimeEnd = dtEnd,
-                GamingPlaceId = gamingPlaceId
+                DateTimeStart = request.DateTimeStart,
+                DateTimeEnd = request.DateTimeEnd,
+                CyberClubName = gamingPlace.CyberClub.Name,
+                GamingPlaceNumber = gamingPlace.Number,
+                Equipment = gamingPlace.Equipment,
+                TotalSum = totalSum,
+                OrderStatus = OrderStatus.Booked
             };
             await _ordersRepository.AddAsync(order, token);
             await _unitOfWork.SaveChangesAsync(token);
 
-            var requiredTimeSlotDto = new TimeSlotDto
-            (
-                dtStart,
-                dtEnd
-            );
-            return requiredTimeSlotDto;
+
+            return _mapper.MapToOrderDto(order);
         }
         public async Task<List<OrderEntity>> GetByDateAndGamingPlaceAsync(
             DateTime date,
             Guid gamingPlaceId,
             CancellationToken token = default)
         {
-            var gamingPlaceDateOrders = await _ordersRepository
-                .GetByExpressionAsync(o => o.DateTimeStart.Date == date, token);
-
-            return gamingPlaceDateOrders.Where(o => o.GamingPlaceId == gamingPlaceId).ToList();
+            return await _ordersRepository
+                .GetByExpressionAsync(o => o.DateTimeStart.Date == date.Date
+                    && o.GamingPlaceId == gamingPlaceId, token);
         }
         public async Task<List<OrderDto>> GetActiveOrdersAsync(CancellationToken token = default)
         {
-            var id = _contextAccessor.TryGetHttpUserId();
-            var activeOrders = await _ordersRepository.GetByExpressionAsync(o => o.UserId == id, token);
+            var userId = _contextAccessor.TryGetHttpUserId();
+            var activeOrders = await _ordersRepository.GetByExpressionAsync(o => o.UserId == userId, token)
+                ?? throw new EntityNotFoundException("order", $"userId: {userId}");
 
-            return activeOrders
-                .OrderByDescending(ao => ao.DateTimeStart)
-                .Select(ao => new OrderDto(ao))
-                .ToList();
+            return _mapper.MapToOrderDto(activeOrders);
 
         }
 
         public async Task<List<OrderDto>> GetByUserEmailAsync(string email, CancellationToken token = default)
         {
-            var user = await _userService.FindUserAsync(u =>u.Email == email)
-                ?? throw new Exception($"User with email {email} not found");
+            var user = await _userService.FindByExpression(u => u.Email == email, token)
+                ?? throw new EntityNotFoundException("user", $" email: {email}");
 
             var userId = user.Id;
             var userOrders = await _ordersRepository.GetByExpressionAsync(o => o.UserId == userId, token);
 
-            return userOrders
+            var orderedUserOrders = userOrders
                 .OrderBy(o => o.OrderStatus)
-                .ThenBy(o => o.DateTimeStart)
-                .Select(o => new OrderDto(o))
-                .ToList();
+                .ThenBy(o => o.DateTimeStart);
+
+            return _mapper.MapToOrderDto(orderedUserOrders);
         }
         public async Task<List<OrderDto>> GetByUserNameAsync(string userName, CancellationToken token = default)
         {
-            var user = await _userService.FindUserAsync(u => u.UserName == userName, token)
-                ?? throw new Exception($"User with UserName {userName} not found");
+            var user = await _userService.FindByExpression(u => u.UserName == userName, token)
+               ?? throw new EntityNotFoundException("user", $" username: {userName}");
 
             var userId = user.Id;
             var userOrders = await _ordersRepository.GetByExpressionAsync(o => o.UserId == userId, token);
 
-            return userOrders
+            var orderedUserOrders = userOrders
                 .OrderBy(o => o.OrderStatus)
-                .ThenBy(o => o.DateTimeStart)
-                .Select(o => new OrderDto(o))
-                .ToList();
+                .ThenBy(o => o.DateTimeStart);
+
+            return _mapper.MapToOrderDto(orderedUserOrders);
         }
 
         public async Task<List<OrderDto>> GetTodaysOrdersAsync(CancellationToken token = default)
         {
-            var today = DateTime.UtcNow;
+            var today = DateTime.Now;
             var todayOrders = await _ordersRepository.GetByExpressionAsync(o => o.DateTimeEnd.Date == today.Date, token);
-            return todayOrders
-                .OrderBy(td => td.DateTimeStart)
-                .Select(o => new OrderDto(o))
-                .ToList();
+
+            var orderedOrders = todayOrders.OrderBy(td => td.DateTimeStart);
+
+            return  _mapper.MapToOrderDto(orderedOrders);
         }
         public async Task UpdateOrderStatusAsync(Guid orderId, string status, CancellationToken token = default)
         {
@@ -144,5 +122,10 @@ namespace GNS.Services.Implementations
             await _unitOfWork.SaveChangesAsync(token);
         }
 
+        public async Task<OrderEntity> GetByIdAsync(Guid orderId, CancellationToken token = default)
+        {
+            return await _ordersRepository.GetByIdAsync(orderId, token)
+                ?? throw new EntityNotFoundException("order", orderId.ToString());
+        }
     }
 }

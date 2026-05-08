@@ -2,6 +2,7 @@ using GNS.Contracts.Requests;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Endpoints.Filters;
 using GNS.Enums;
+using GNS.Exceptions;
 using GNS.Extensions;
 using GNS.Services;
 using GNS.Services.Interfaces;
@@ -21,26 +22,45 @@ namespace GNS.Endpoints
 
                 });
 
-            user.MapPost("login", Login)
-                .AllowAnonymous();
-
-
-
             user.MapPost("register", Register)
+                            .AllowAnonymous()
+                            .AddEndpointFilter<EmailFilter>()
+                            .AddEndpointFilter<PasswordFilter>()
+                            .AddEndpointFilter<UserNameFilter>()
+                            .AddEndpointFilter<TerminalValidationFilter>()
+                            .AddEndpointFilter<BloomFilter>()
+                            .AddEndpointFilter<TerminalValidationFilter>();
+
+            user.MapPost("login", Login)
                 .AllowAnonymous()
-                .AddEndpointFilter<BloomFilter>()
-                .AddEndpointFilter<FinalValidationFilter>();
+                .AddEndpointFilter<EmailFilter>()
+                .AddEndpointFilter<PasswordFilter>()
+                .AddEndpointFilter<TerminalValidationFilter>();
 
             user.MapGet("refresh", Refresh)
                 .AllowAnonymous();
 
-            user.MapGet("get-all-clubs", GetAllClubs);
+            user.MapPost("logout", Logout);
+            var get = user.MapGroup("get");
 
-            user.MapGet("get-by-city", GetClubsByCity);
-            user.MapPost("create-order", CreateOrder);
-            user.MapGet("get-active-orders", GetActiveOrders);
-            user.MapGet("get-time-slots", GetAwailableTimeSlots);
-            user.MapGet("get-games-by-flter", GetGamesByFilter);
+            get.MapGet("all-clubs", GetAllClubs);
+
+            get.MapGet("clubs-by-city", GetClubsByCity)
+                .AddEndpointFilter<QueryCityFilter>()
+                .AddEndpointFilter<TerminalValidationFilter>();
+
+            get.MapGet("clubs-wh", GetCCWorkingHours);
+            get.MapGet("cc-gamingplaces", GetCCGamingPlaces);
+
+            get.MapGet("active-orders", GetActiveOrders);
+            get.MapGet("unavailable-time-slots", GetUnAwailableTimeSlots);
+            get.MapGet("games-by-flter", GetGamesByFilter)
+                .AddEndpointFilter<QueryGameTitleFilter>()
+                .AddEndpointFilter<TerminalValidationFilter>();
+
+            user.MapPost("create-order", CreateOrder)
+                .AddEndpointFilter<TimeSpanFilter>()
+                .AddEndpointFilter<TerminalValidationFilter>();
 
             user.MapDelete("delete-user", DeleteUser);
 
@@ -52,38 +72,38 @@ namespace GNS.Endpoints
             )
         {
             await userService.RegisterAsync(request);
+
             return Results.Ok();
         }
 
         public static async Task<IResult> Login(
             [FromBody] LoginUserRequest request,
             IUserService userService,
-            HttpContext context
-        )
+            ICookieService cookieService
+            )
         {
             var response = await userService.LoginAsync(request);
-            
+
             if (response.Role != Role.User)
             {
                 return Results.Unauthorized();
             }
 
-            context.Response.Cookies.Append("accessToken", response.AccessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.Strict
-            });
+            cookieService.AppendCookie("accessToken", response.AccessToken);
+            cookieService.AppendCookie("refreshToken", response.RefreshToken);
+            
+            return Results.Ok();
+        }
+        public static IResult Logout(ICookieService service)
+        {
+            service.DeleteCookie("accessToken");
+            service.DeleteCookie("refreshToken");
 
-            context.Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.Strict
-            });
             return Results.Ok();
         }
         public static async Task<IResult> Refresh(
-            IAuthService service,
-            IRefreshTokensRepository refreshTokensRepository,
+            IAuthService authService,
+            ICookieService cookieService,
             HttpContext context
             )
         {
@@ -101,88 +121,118 @@ namespace GNS.Endpoints
 
             if (userIdClaim is null)
             {
-                Results.Problem("userIdClaim is null");
+                return Results.Problem("Cannot find id claim");
             }
+
             if (!Guid.TryParse(userIdClaim.Value, out Guid userId))
             {
-                return Results.Problem("userIdClaim.Value has incorrect format");
+                return Results.ValidationProblem(errors: new Dictionary<string, string[]>
+                {
+                    ["claim"] = ["id claim must have Guid format"]
+                });
+
             }
-            var verificationResponse = await service.VerifyRefreshTokenAsync(refreshToken, userId);
+
+            var verificationResponse = await authService.VerifyRefreshTokenAsync(refreshToken, userId);
 
             if (!verificationResponse.IsValid)
             {
                 return Results.Unauthorized();
-                //
             }
 
-            var accessToken = await service.GetNewAcessTokenAsync(userId);
-            context.Response.Cookies.Append("accessToken", accessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.Strict
-            });
+            var accessToken = await authService.GetNewAcessTokenAsync(userId);
 
-            context.Response.Cookies.Append("refreshToken", verificationResponse.NewRefreshToken.Token.ToString(), new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.Strict
-            });
-            
+            cookieService.AppendCookie("accessToken", accessToken);
+
+            cookieService.AppendCookie("refreshToken", verificationResponse.NewRefreshToken.Token.ToString());
+
             return Results.Ok();
         }
-        public static async Task<IResult> GetAwailableTimeSlots(
-            [FromQuery] GetAvailableTimeSlotsRequest request,
-            ITimeSlotsService service
-        )
+        public static async Task<IResult> GetCCWorkingHours(
+            Guid cyberClubId,
+            IWorkingHoursService service
+            )
         {
-            var timeSlots = await service.GetAvailableSlotsAsync(request);
+            var workingHours = await service.GetByCyberClubIdAsync(cyberClubId);
 
-            return TypedResults.Ok(timeSlots);
+            return TypedResults.Ok(workingHours);
         }
-        public static async Task<IResult> GetAllClubs(
-           ICyberClubService cyberClubService
-           )
+        public static async Task<IResult> GetUnAwailableTimeSlots(
+            Guid gamingPlaceId,
+            DateTime date,
+            ITimeSlotsService service
+            )
         {
-            var cyberClubs = await cyberClubService.GetAllClubsAsync();
-            return TypedResults.Ok(cyberClubs);
+
+            var timeSlotsDto = await service.GetUnAvailableSlotsAsync(gamingPlaceId, date);
+
+            return TypedResults.Ok(timeSlotsDto);
+
         }
+
+        public static async Task<IResult> GetAllClubs(ICyberClubService cyberClubService)
+        {
+            var cyberClubsDto = await cyberClubService.GetAllClubsAsync();
+
+            return TypedResults.Ok(cyberClubsDto);
+        }
+
         public static async Task<IResult> GetClubsByCity(
             string city,
-            ICyberClubService cyberClubService)
+            ICyberClubService cyberClubService
+            )
         {
-            var cityClubs = await cyberClubService.GetByCityAsync(city);
-            return TypedResults.Ok(cityClubs);
+
+            var cityClubsDto = await cyberClubService.GetByCityAsync(city);
+
+            return TypedResults.Ok(cityClubsDto);
+
+        }
+        public static async Task<IResult> GetCCGamingPlaces(
+            Guid cyberClubId,
+            IGamingPlaceService service
+            )
+        {
+            var gamingPlaces = await service.GetCCGamingPlacesAsync(cyberClubId);
+
+            return TypedResults.Ok(gamingPlaces);
         }
         public static async Task<IResult> CreateOrder(
             [FromBody] CreateOrderRequest request,
             IOrderService service
-        )
+            )
         {
-            await service.CreateOrderAsync(request);
-            return Results.Ok();
+            var order = await service.CreateOrderAsync(request);
+
+            return Results.Ok(order);
         }
 
 
-        public static async Task<IResult> GetActiveOrders(
-            IOrderService service
-        )
+        public static async Task<IResult> GetActiveOrders(IOrderService service)
         {
             var activeOrders = await service.GetActiveOrdersAsync();
 
             return TypedResults.Ok(activeOrders);
         }
+
         public static async Task<IResult> GetGamesByFilter(
             string filter,
             IGameService gameService
-        )
+            )
         {
             var games = await gameService.GetByTitleFilterAsync(filter);
 
             return TypedResults.Ok(games);
         }
-        public static async Task<IResult> DeleteUser(IUserService service)
+        public static async Task<IResult> DeleteUser(
+            IUserService service,
+            ICookieService cookieService)
         {
             await service.DeleteUserAsync();
+
+            cookieService.DeleteCookie("accessToken");
+            cookieService.DeleteCookie("refreshToken");
+            
             return Results.Ok();
         }
     }

@@ -19,23 +19,25 @@ namespace GNS.Endpoints
 
 
 
-            manager.MapGet("get-cyberclub-employees", GetCyberClubEmployees);
+            manager.MapGet("get-cyberclub-employees", GetCyberClubEmployees)
+                .AddEndpointFilter<ManagerAccessToCyberClubFilter>();
+                
 
             manager.MapGet("get-employee-by-names", GetByNames)
-                .AddEndpointFilter<NamesFilter>()
-                .AddEndpointFilter<FinalValidationFilter>();
+                .AddEndpointFilter<QueryNamesFilter>()
+                .AddEndpointFilter<TerminalValidationFilter>();
 
 
 
             manager.MapPut("give-bonus", GiveBonus)
-             //   .AddEndpointFilter<PersonFilter>()
+                .AddEndpointFilter<ManagerAccessToEmployeeFilter>()
                 .AddEndpointFilter<BonusFilter>()
-                .AddEndpointFilter<FinalValidationFilter>();
+                .AddEndpointFilter<TerminalValidationFilter>();
 
             manager.MapPut("give-penalty", GivePenalty)
-               // .AddEndpointFilter<PersonFilter>()
+                .AddEndpointFilter<ManagerAccessToEmployeeFilter>()
                 .AddEndpointFilter<PenaltyFilter>()
-                .AddEndpointFilter<FinalValidationFilter>();
+                .AddEndpointFilter<TerminalValidationFilter>();
 
             return employee;
         }
@@ -51,7 +53,7 @@ namespace GNS.Endpoints
         }
         
         public static async Task<IResult> GetCyberClubEmployees(
-            string cyberClubId,
+            Guid cyberClubId,
             IEmployeeService employeeService
         )
         {

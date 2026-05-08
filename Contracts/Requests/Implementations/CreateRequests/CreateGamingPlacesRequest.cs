@@ -1,0 +1,14 @@
+using System.ComponentModel.DataAnnotations;
+using GNS.Contracts.Requests.Interfaces;
+using GNS.Enums;
+
+namespace GNS.Contracts.Requests
+{
+    public record class CreateGamingPlacesRequest : ICyberClubRequest, IPricePerHourRequest, ICountRequest
+    {
+        [Required] public Guid CyberClubId { get; set; } 
+        [Required] public int Count { get; set; }
+        [Required] public decimal PricePerHour { get; set; }
+        [Required] public string EquipmentName { get; set; } = string.Empty;
+    }
+}

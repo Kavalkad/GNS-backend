@@ -14,14 +14,14 @@ namespace GNS.Data.Configurations
             builder.Property(cc => cc.Name)
                 .HasMaxLength(25)
                 .IsRequired();
-            builder.HasIndex(cc => cc.Name);
+            builder.HasIndex(cc => cc.Name).IsUnique();
 
             builder.Property(cc => cc.City)
                 .HasMaxLength(25)
                 .IsRequired();
 
             builder.Property(cc => cc.Address)
-                .HasMaxLength(256)
+                .HasMaxLength(64)
                 .IsRequired();
 
 

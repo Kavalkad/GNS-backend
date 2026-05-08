@@ -1,6 +1,6 @@
 namespace GNS.Exceptions
 {
-    public class IncorrectTimeException: IncorrectValueException
+    public class IncorrectTimeException: IncorrectFormatException
     {
         public IncorrectTimeException(
             string timeName,

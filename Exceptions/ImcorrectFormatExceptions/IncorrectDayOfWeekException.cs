@@ -1,6 +1,6 @@
 namespace GNS.Exceptions
 {
-    public class IncorrectDayOfWeekException: IncorrectValueException
+    public class IncorrectDayOfWeekException: IncorrectFormatException
     {
         public IncorrectDayOfWeekException(
             string enteredValue,

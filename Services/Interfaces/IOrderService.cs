@@ -6,8 +6,9 @@ namespace GNS.Services.Interfaces
 {
     public interface IOrderService
     {
-        Task<TimeSlotDto> CreateOrderAsync(CreateOrderRequest request, CancellationToken token = default);
+        Task<OrderDto> CreateOrderAsync(CreateOrderRequest request, CancellationToken token = default);
         Task<List<OrderDto>> GetActiveOrdersAsync(CancellationToken token = default);
+        Task<OrderEntity> GetByIdAsync(Guid orderId, CancellationToken token = default);
         Task<List<OrderEntity>> GetByDateAndGamingPlaceAsync(
             DateTime date,
             Guid gamingPlaceId,

@@ -2,6 +2,6 @@ namespace GNS.Contracts.Requests.Interfaces
 {
     public interface IEmployeeRequest
     {
-        public string EmployeeId { get; set; }
+        Guid EmployeeId { get; set; }
     }
 }

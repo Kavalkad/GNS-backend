@@ -5,7 +5,9 @@ namespace GNS.Data.Entities
     {
         public DateTime DateTimeStart { get; set; }
         public DateTime DateTimeEnd { get; set; }
-
+        public string CyberClubName { get; set; } = string.Empty;
+        public int GamingPlaceNumber { get; set; }
+        public Equipment Equipment { get; set; } 
         public decimal TotalSum { get; set; }
         public OrderStatus OrderStatus { get; set; }
         

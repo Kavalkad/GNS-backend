@@ -1,6 +1,7 @@
 using GNS.Enums;
 using GNS.Interfaces;
 
+
 namespace GNS.Data.Entities
 {
     public class UserEntity : AbstractUser, IClaimsGeneratable

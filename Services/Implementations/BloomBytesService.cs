@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
@@ -5,29 +6,20 @@ using GNS.Services.Interfaces;
 
 namespace GNS.Services.Implementations
 {
-    public class BloomBytesService : IBloomBytesService
+    public class BloomBytesService(
+        IBloomBytesRepository bloomBytesRepository,
+        IUnitOfWork unitOfWork) : IBloomBytesService
     {
-        private readonly IBloomBytesRepository _bloomBytesRepository;
-        private readonly IUnitOfWork _unitOfWork;
-        public BloomBytesService(
-            IBloomBytesRepository bloomBytesRepository,
-            IUnitOfWork unitOfWork)
-        {
-            _bloomBytesRepository = bloomBytesRepository;
-            _unitOfWork = unitOfWork;
-        }
-        public byte[] GetBytes(string word)
-        {
-            if (word.Length < 7)
-            {
-                // Validation Error
-                throw new Exception($"{word} must contain at least 7 chars");
-            }
+        private readonly IBloomBytesRepository _bloomBytesRepository = bloomBytesRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
+        private static byte[] GetBytes(string word)
+        {
+            
             var wordBytes = Encoding.UTF8.GetBytes(word);
             var result = new byte[4];
 
-            for (int i = 0; i <= 3 ; i++)
+            for (int i = 0; i <= 3; i++)
             {
                 result[i] = wordBytes[i * 2];
             }
@@ -55,6 +47,7 @@ namespace GNS.Services.Implementations
             CancellationToken token = default
             )
         {
+            
             var emailBytes = GetBytes(email);
             var userNameBytes = GetBytes(userName);
 

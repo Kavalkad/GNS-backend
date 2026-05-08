@@ -7,10 +7,11 @@ namespace GNS.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<UserEntity?> FindUserAsync(
-            Expression<Func<UserEntity, bool>> predicate,
+        Task<UserEntity> GetUserByIdAsync(
+            Guid userId,
             CancellationToken token = default
             );
+        Task<UserEntity?> FindByExpression(Expression<Func<UserEntity, bool>> predicate, CancellationToken token = default);
         Task RegisterAsync(RegisterUserRequest request, CancellationToken token = default);
         Task<LoginUserResponse> LoginAsync(LoginUserRequest request, CancellationToken token = default);
         Task DeleteUserAsync(CancellationToken token = default);
