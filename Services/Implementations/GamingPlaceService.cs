@@ -26,43 +26,49 @@ namespace GNS.Services.Implementations
 
         public async Task AddGamingPlacesAsync(CreateGamingPlacesRequest request, CancellationToken token = default)
         {
-            // Сделать GetWithDetails в репозитории, но не в BaseRepository
-
             var cyberClub = await _cyberClubService.GetClubByIdAsync(request.CyberClubId, token)
                 ?? throw new EntityNotFoundException("Cyber club", request.CyberClubId.ToString());
+            var cyberClubId = cyberClub.Id;
+            
+            var cyberClubGamingPlacesCount = await _gamingPlacesRepository.CountAsync(gp => gp.CyberClubId == cyberClubId, token);
+            var newGamingPlaces = new GamingPlaceEntity[request.Count];
 
-            var maxGamingPlaceNumber = cyberClub.GamingPlaces.Count;
-            var gamingPlaces = new GamingPlaceEntity[request.Count];
-
-            _ = Enum.TryParse(request.EquipmentName, out Equipment _equipment);
+            if (!Enum.TryParse(request.EquipmentName, out Equipment _equipment))
+            {
+                throw new BadHttpRequestException("Equipment can be only PC, Xbox or PlayStation");
+            }
 
             for (int i = 0; i < request.Count; i++)
             {
                 var gamingPlace = new GamingPlaceEntity
                 {
-                    Number = i + maxGamingPlaceNumber + 1,
+                    Number = i + cyberClubGamingPlacesCount + 1,
                     PricePerHour = request.PricePerHour,
                     Equipment = _equipment,
-                    CyberClubId = cyberClub.Id
+                    CyberClubId = cyberClubId
                 };
-                gamingPlaces[i] = gamingPlace;
+
+                newGamingPlaces[i] = gamingPlace;
             }
 
-            await _gamingPlacesRepository.AddRangeAsync(gamingPlaces, token);
+            await _gamingPlacesRepository.AddRangeAsync(newGamingPlaces, token);
             await _unitOfWork.SaveChangesAsync(token);
         }
        
         public async Task<GamingPlaceEntity> GetByIdAsync(Guid gamingPlaceId, CancellationToken token = default)
         {
             return await _gamingPlacesRepository.GetByIdAsync(gamingPlaceId, token)
-                ?? throw new EntityNotFoundException("gmaing place", $"gaming place id: {gamingPlaceId}");
+                ?? throw new EntityNotFoundException("gaming place", $"gaming place id: {gamingPlaceId}");
         }
 
-        public async Task<GamingPlaceEntity> GetByIdWithDetails(Guid gamingPlaceId, CancellationToken token = default)
+        public async Task<(GamingPlaceEntity, string)> GetWithCyberClubName(Guid gamingPlaceId, CancellationToken token = default)
         {
-            return await _gamingPlacesRepository.GetByIdWithDetailsAsync(gamingPlaceId, token)
-                 ?? throw new EntityNotFoundException("gmaing place", $"gaming place id: {gamingPlaceId}");
+            var gamingPlace = await _gamingPlacesRepository.GetWithDetailsAsync(gamingPlaceId, token)
+                ?? throw new EntityNotFoundException("gaming place", $"gaming place id: {gamingPlaceId}");
+
+            return (gamingPlace, gamingPlace.CyberClub.Name);
         }
+       
         
 
         public async Task<List<GamingPlaceDto>> GetCCGamingPlacesAsync(Guid cyberClubId, CancellationToken token = default)

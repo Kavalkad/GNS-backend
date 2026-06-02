@@ -11,7 +11,7 @@ namespace GNS.Data
             : base(options)
         {
             //Database.EnsureDeleted();
-            Database.EnsureCreated();  
+            Database.EnsureCreated();
         }
 
         public DbSet<CyberClubEntity> CyberClubs { get; set; }

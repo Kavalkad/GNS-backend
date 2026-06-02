@@ -24,6 +24,7 @@ namespace GNS.Extensions
             services.AddScoped<QueryCityFilter>();
             services.AddScoped<QueryGameTitleFilter>();
             services.AddScoped<QueryEmailFilter>();
+            services.AddScoped<QueryDateFilter>();
 
             services.AddScoped<OrderStatusFilter>();
             services.AddScoped<TerminalValidationFilter>();

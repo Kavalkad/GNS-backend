@@ -30,18 +30,19 @@ namespace GNS.Services.Implementations
 
         public async Task<LoginEmployeeResponse> LoginAsync(LoginEmployeeRequest request, CancellationToken token = default)
         {
-            var employee = await _employeesRepository.FindAsync(e => e.Email == request.Email, token)
-                ?? throw new EntityNotFoundException("Employee", request.Email);
+            var employee = await _employeesRepository.FindAsync(e => e.Email == request.Email, token);
+                
 
-            bool result = _hasher.Verify(request.Password, employee.HashedPassword)
+            bool result = employee is not null
+                && _hasher.Verify(request.Password, employee.HashedPassword)
                 && _hasher.Verify(request.SecretWord, employee.HashedSecretWord);
 
             if (!result)
             {
-                throw new AuthenticationFailureException("Wrong password or secret word");
+                throw new AuthenticationFailureException("Wrong email, password or secret word");
             }
 
-            var accessToken = _tokenService.GenerateAccessToken(employee);
+            var accessToken = _tokenService.GenerateAccessToken(employee.Id, employee.Role);
             var refreshToken = await _tokenService.GenerateRefreshTokenAsync(employee.Id, token);
             var role = Enum.GetName(employee.Role);
 

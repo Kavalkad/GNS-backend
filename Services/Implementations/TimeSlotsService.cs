@@ -30,7 +30,6 @@ namespace GNS.Services.Implementations
             CancellationToken token = default
         )
         {
-
             var dayOfWeek = date.Date.ParseToCustomDayOfWeek();
 
             var gamingPlace = await _gamingPlaceService.GetByIdAsync(gamingPlaceId, token);
@@ -43,11 +42,9 @@ namespace GNS.Services.Implementations
             var requiredWorkingHours = workingHours.FirstOrDefault(wh => wh.DayOfWeek == stringDayOfWeek)
                 ?? throw new EntityNotFoundException("WorkingHours", $"day of week: {dayOfWeek}");
 
-
-
-            if (requiredWorkingHours.IsOpen)
+            if (!requiredWorkingHours.IsOpen)
             {
-                return _mapper.MapToTimeSlotsDtoList(requiredWorkingHours);
+                return _mapper.MapToTimeSlotDtoList(requiredWorkingHours);
             }
 
             var gamingPlaceDateOrders = await _orderService.GetByDateAndGamingPlaceAsync(
@@ -56,11 +53,13 @@ namespace GNS.Services.Implementations
                 token: token
             );
 
-            var unavailableTimeSlots = gamingPlaceDateOrders
-                .Select(o => new TimeSlotDto { Start = TimeOnly.FromDateTime(o.DateTimeStart), End = TimeOnly.FromDateTime(o.DateTimeEnd) })
-                .OrderBy(ts => ts.Start)
-                .ToList();
-            return unavailableTimeSlots;
+            if (gamingPlaceDateOrders.Count == 0)
+            {
+                return [];
+            }
+
+
+            return _mapper.MapToTimeSlotDtoList(gamingPlaceDateOrders);
 
         }
 

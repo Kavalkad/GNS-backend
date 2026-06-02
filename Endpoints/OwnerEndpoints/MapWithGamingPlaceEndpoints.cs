@@ -12,7 +12,9 @@ namespace GNS.Endpoints.OwnerEndploints
         {
             var gamingPlaces = owner.MapGroup("gaming-places");
             gamingPlaces.MapPost("add", AddGamingPlaces)
-                .AddEndpointFilter<OwnerAccessToCyberClubFilter>();
+                .AddEndpointFilter<OwnerAccessToCyberClubFilter>()
+                .AddEndpointFilter<PricePerHourFilter>()
+                .AddEndpointFilter<TerminalValidationFilter>();
 
             var update = gamingPlaces.MapGroup("update")
                 .AddEndpointFilter<OwnerAccessToGamingPlaceFilter>();

@@ -70,8 +70,11 @@ namespace GNS.Services.Implementations
                 throw new AuthenticationFailureException("Wrong password or supersecret word");
             }
 
-            var accessToken = _tokenService.GenerateAccessToken(owner);
+            var accessToken = _tokenService.GenerateAccessToken(owner.Id, owner.Role);
+
+            
             var refreshToken = await _tokenService.GenerateRefreshTokenAsync(owner.Id, token);
+
 
             return new LoginOwnerResponse
             {

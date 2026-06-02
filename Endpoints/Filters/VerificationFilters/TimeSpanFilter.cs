@@ -28,8 +28,14 @@ namespace GNS.Endpoints.Filters
             {
                 Results.BadRequest("failed to get timespan values");
             }
+
             var start = request.DateTimeStart;
             var end = request.DateTimeEnd;
+            var now = DateTime.Now;
+            if (end < now || start < now)
+            {
+                errors.Add("past time", ["You can't choose past time"]);
+            }
             if (end - start != TimeSpan.FromHours(1))
             {
                 errors.Add("invalid timespan", ["You can order only 1 hour"]);

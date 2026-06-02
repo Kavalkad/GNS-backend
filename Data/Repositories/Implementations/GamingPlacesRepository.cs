@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Enums;
@@ -9,9 +10,11 @@ namespace GNS.Data.Repositories.Implementations
     public class GamingPlacesRepository(AppDbContext dbcontext)
         : BaseRepository<GamingPlaceEntity>(dbcontext), IGamingPlacesRepository
     {
-        public async Task<GamingPlaceEntity?> GetByIdWithDetailsAsync(
-            Guid gamingPlaceId,
-            CancellationToken token = default)
+        public async Task<int> CountAsync(Expression<Func<GamingPlaceEntity, bool>> predicate, CancellationToken token = default)
+        {
+            return await _dbSet.CountAsync(predicate, token);
+        }
+        public async Task<GamingPlaceEntity?> GetWithDetailsAsync(Guid gamingPlaceId, CancellationToken token = default)
         {
             return await _dbSet
                 .AsNoTracking()

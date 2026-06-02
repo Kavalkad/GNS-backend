@@ -31,7 +31,7 @@ namespace GNS.Extensions
                     {
                         ValidateIssuer = jwtOptions!.ValidateIssuer,
                         ValidateAudience = jwtOptions.ValidateAudience,
-                        ValidateLifetime = true,
+                        ValidateLifetime = jwtOptions.ValidateLifetime,
                         ValidateIssuerSigningKey = jwtOptions.ValidateIssuerSigningKey,
                         RequireExpirationTime = true,
                         ClockSkew = TimeSpan.Zero,

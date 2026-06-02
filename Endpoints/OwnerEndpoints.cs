@@ -24,6 +24,7 @@ namespace GNS.Endpoints
                 .AddEndpointFilter<UserNameFilter>()
                 .AddEndpointFilter<SuperSecretWordFilter>()
                 .AddEndpointFilter<TerminalValidationFilter>()
+                .AddEndpointFilter<TaxIdentificationNumberFilter>()
                 .AddEndpointFilter<BloomFilter>()
                 .AddEndpointFilter<TerminalValidationFilter>();
 

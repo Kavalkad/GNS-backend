@@ -8,8 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 namespace GNS.Services.Implementations
 {
     public class AuthService(
-        ITokenService tokenService,
-        IUserService userService,
         ICyberClubService cyberClubService,
         IEmployeeService employeeService,
         IGamingPlaceService gamingPlaceService,
@@ -17,47 +15,14 @@ namespace GNS.Services.Implementations
         IOrderService orderService
             ) : IAuthService
     {
-        private readonly ITokenService _tokenService = tokenService;
-        private readonly IUserService _userService = userService;
+
         private readonly ICyberClubService _cyberClubService = cyberClubService;
         private readonly IEmployeeService _employeeSerice = employeeService;
         private readonly IGamingPlaceService _gamingPlaceService = gamingPlaceService;
         private readonly IWorkingHoursService _workingHoursService = workingHoursService;
         private readonly IOrderService _orderService = orderService;
 
-        public async Task<string> GetNewAcessTokenAsync(Guid userId, CancellationToken token = default)
-        {
-            var user = await _userService.GetUserByIdAsync(userId, token);
-                
-            return _tokenService.GenerateAccessToken(user);
-        }
-        public async Task<VerifyRefreshTokenResponse> VerifyRefreshTokenAsync(string tokenValue, Guid userId, CancellationToken token = default)
-        {
-            var userTokens = await _tokenService.GetByUserIdAsync(userId, token);
-
-            var userToken = userTokens.FirstOrDefault(t => t.Token.ToString() == tokenValue)
-                ?? throw new EntityNotFoundException("RefreshToken", tokenValue);
-
-            bool isValid = userToken.ExpiresAt > DateTime.Now && !userToken.IsRevoked;
-
-            if (!isValid)
-            {
-                return new VerifyRefreshTokenResponse
-                {
-                    IsValid = false
-                };
-            }
-
-            await _tokenService.RevokeRefreshTokenAsync(tokenValue, token);
-
-            var newRefreshToken = await _tokenService.GenerateRefreshTokenAsync(userId, token);
-
-            return new VerifyRefreshTokenResponse
-            {
-                NewRefreshToken = newRefreshToken,
-                IsValid = isValid
-            };
-        }
+        
 
         public async Task<bool> VerifyOwnerAccessToEmployeeAsync(
             Guid ownerId,

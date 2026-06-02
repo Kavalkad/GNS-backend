@@ -8,6 +8,7 @@ namespace GNS.Services.Implementations
         public void AppendCookie(string key, string value, CookieOptions options = default)
         {
             var context = _contextAccessor.HttpContext;
+            
             if (context.Request.Cookies.ContainsKey(key))
             {
                 context.Response.Cookies.Delete(key);

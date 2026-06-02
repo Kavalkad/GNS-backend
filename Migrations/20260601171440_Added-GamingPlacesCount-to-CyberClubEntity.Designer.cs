@@ -3,6 +3,7 @@ using System;
 using GNS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601171440_Added-GamingPlacesCount-to-CyberClubEntity")]
+    partial class AddedGamingPlacesCounttoCyberClubEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.1");
@@ -173,7 +176,13 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("Token")
@@ -184,8 +193,7 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
                 });
@@ -352,8 +360,8 @@ namespace backend.Migrations
             modelBuilder.Entity("GNS.Data.Entities.RefreshTokenEntity", b =>
                 {
                     b.HasOne("GNS.Data.Entities.UserEntity", "User")
-                        .WithOne("RefreshToken")
-                        .HasForeignKey("GNS.Data.Entities.RefreshTokenEntity", "UserId")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -433,7 +441,7 @@ namespace backend.Migrations
                 {
                     b.Navigation("Orders");
 
-                    b.Navigation("RefreshToken");
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("GNS.Data.Entities.OwnerEntity", b =>

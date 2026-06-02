@@ -7,6 +7,7 @@ using GNS.Enums;
 using GNS.Exceptions;
 using GNS.Extensions;
 using GNS.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 
 namespace GNS.Services.Implementations
 {
@@ -78,17 +79,17 @@ namespace GNS.Services.Implementations
         public async Task<LoginUserResponse> LoginAsync(LoginUserRequest request, CancellationToken token = default)
         {
 
-            var user = await _usersRepository.FindAsync(u => u.Email == request.Email, token)
-                ?? throw new EntityNotFoundException("User", request.Email);
+            var user = await _usersRepository.FindAsync(u => u.Email == request.Email, token);
 
-            var result = _hasher.Verify(request.Password, user.HashedPassword);
+
+            var result = user is not null && _hasher.Verify(request.Password, user.HashedPassword);
 
             if (!result)
             {
-                throw new UnauthorizedAccessException();
+                throw new AuthenticationFailureException("wrong email or password");
             }
             
-            var accessToken = _tokenService.GenerateAccessToken(user);
+            var accessToken = _tokenService.GenerateAccessToken(user.Id, user.Role);
             var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user.Id, token);
 
             return new LoginUserResponse

@@ -9,11 +9,11 @@ namespace GNS.Services.Implementations
     public class ClaimService(IClaimsBuilder claimBuilder) : IClaimService
     {
         private readonly IClaimsBuilder _claimBuilder = claimBuilder;
-        public ICollection<Claim> GenerateClaims(IClaimsGeneratable entity)
+        public ICollection<Claim> GenerateClaims(Guid userId, Role userRole)
         {
-            _claimBuilder.AddIdClaim(entity.Id);
+            _claimBuilder.AddIdClaim(userId);
 
-            switch (entity.Role)
+            switch (userRole)
             {
                 case Role.User:
                     _claimBuilder.AddUserClaim();

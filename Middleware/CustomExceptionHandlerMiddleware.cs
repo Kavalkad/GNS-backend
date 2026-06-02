@@ -18,8 +18,8 @@ namespace GNS.Middleware
             }
             catch (EntityNotFoundException e)
             {
-               // context.Response.StatusCode = StatusCodes.Status204NoContent;
-               context.Response.ContentType = "application/json";
+                // context.Response.StatusCode = StatusCodes.Status204NoContent;
+                context.Response.ContentType = "application/json";
 
                 var response = new
                 {
@@ -27,7 +27,7 @@ namespace GNS.Middleware
                     message = e.Message
                 };
                 await context.Response.WriteAsJsonAsync(response);
-                
+
             }
             catch (IncorrectFormatException e)
             {
@@ -64,7 +64,20 @@ namespace GNS.Middleware
                     message = e.Message
                 };
                 await context.Response.WriteAsJsonAsync(response);
-            }/*
+            }
+            catch (BadHttpRequestException e)
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.ContentType = "application/json";
+
+                var response = new
+                {
+                    error = "bad request",
+                    message = e.Message
+                };
+                await context.Response.WriteAsJsonAsync(response);
+            }
+            /*
             catch (Exception e)
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;

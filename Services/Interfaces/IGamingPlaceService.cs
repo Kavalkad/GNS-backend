@@ -11,11 +11,11 @@ namespace GNS.Services.Interfaces
     {
         Task AddGamingPlacesAsync(CreateGamingPlacesRequest request, CancellationToken token = default);
         Task<GamingPlaceEntity> GetByIdAsync(Guid gamingPlaceId, CancellationToken token = default);
-        Task<GamingPlaceEntity> GetByIdWithDetails(Guid gamingPlaceId, CancellationToken token = default);
+        Task<(GamingPlaceEntity, string)> GetWithCyberClubName(Guid gamingPlaceId, CancellationToken token = default); 
         Task<List<GamingPlaceDto>> GetCCGamingPlacesAsync(Guid cyberClubId, CancellationToken token = default);
         Task UpdateGamingPlacePricePerHourAsync(UpdateGamingPlacePricePerHourRequest request, CancellationToken token = default);
         Task UpdateGamingPlaceNumberAsync(UpdateGamingPlaceNumberRequest request, CancellationToken token = default);
         Task DeleteGamingPlaceAsync(Guid gamingPlaceId, CancellationToken token = default);
-        // Task<List<GamingPlaceEntity>> GetByEquipment(Equipment equipment);
+
     }
 }

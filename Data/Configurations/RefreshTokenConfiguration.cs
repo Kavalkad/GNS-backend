@@ -12,8 +12,8 @@ namespace GNS.Data.Configurations
 
             builder
                 .HasOne(rt => rt.User)
-                .WithMany(u => u.RefreshTokens)
-                .HasForeignKey(rt => rt.UserId);
+                .WithOne(u => u.RefreshToken);
+
 
         }
     }

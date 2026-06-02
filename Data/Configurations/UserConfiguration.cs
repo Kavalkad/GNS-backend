@@ -20,8 +20,9 @@ namespace GNS.Data.Configurations
                 .WithOne(o => o.User);
 
             builder
-                .HasMany(u => u.RefreshTokens)
+                .HasOne(u => u.RefreshToken)
                 .WithOne(rt => rt.User);
+
 
             builder
                 .HasOne(u => u.BloomBytes)

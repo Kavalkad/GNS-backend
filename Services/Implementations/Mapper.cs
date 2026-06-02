@@ -18,12 +18,7 @@ namespace GNS.Services.Implementations
         }
         public List<CyberClubDto> MapToCyberClubDto(IEnumerable<CyberClubEntity> clubs)
         {
-            var result = new List<CyberClubDto>();
-            foreach (var c in clubs)
-            {
-                result.Add(MapToCyberClubDto(c));
-            }
-            return result;
+            return clubs.Select(MapToCyberClubDto).ToList();
         }
         public EmployeeDto MapToEmployeeDto(EmployeeEntity e)
         {
@@ -40,12 +35,7 @@ namespace GNS.Services.Implementations
         }
         public List<EmployeeDto> MapToEmployeeDto(IEnumerable<EmployeeEntity> employees)
         {
-            var result = new List<EmployeeDto>();
-            foreach (var e in employees)
-            {
-                result.Add(MapToEmployeeDto(e));
-            }
-            return result;
+            return employees.Select(MapToEmployeeDto).ToList();
         }
         public WorkingHoursDto MapToWorkingHoursDto(WorkingHoursEntity wh)
         {
@@ -60,15 +50,10 @@ namespace GNS.Services.Implementations
         }
         public List<WorkingHoursDto> MapToWorkingHoursDto(IEnumerable<WorkingHoursEntity> workingHours)
         {
-            var result = new List<WorkingHoursDto>();
-            foreach (var wh in workingHours)
-            {
-                result.Add(MapToWorkingHoursDto(wh));
-            }
-            return result;
+            return workingHours.Select(MapToWorkingHoursDto).ToList();
         }
 
-        public List<TimeSlotDto> MapToTimeSlotsDtoList(WorkingHoursDto wh)
+        public List<TimeSlotDto> MapToTimeSlotDtoList(WorkingHoursDto wh)
         {
             var timeSlots = new List<TimeSlotDto>();
             var max = wh.EndHour;
@@ -84,6 +69,16 @@ namespace GNS.Services.Implementations
                 });
             }
             return timeSlots;
+        }
+        public List<TimeSlotDto> MapToTimeSlotDtoList(IEnumerable<OrderEntity> orders)
+        {
+            return orders.Select(o => new TimeSlotDto
+            {
+                Start = TimeOnly.FromDateTime(o.DateTimeStart),
+                End = TimeOnly.FromDateTime(o.DateTimeEnd)
+            })
+                .OrderBy(ts => ts.Start)
+                .ToList();
         }
 
         public GameDto MapToGameDto(GameEntity g)
@@ -109,12 +104,7 @@ namespace GNS.Services.Implementations
         }
         public List<GameDto> MapToGameDto(IEnumerable<GameEntity> games)
         {
-            var result = new List<GameDto>();
-            foreach (var g in games)
-            {
-                result.Add(MapToGameDto(g));
-            }
-            return result;
+            return games.Select(MapToGameDto).ToList();
         }
        
         public GamingPlaceDto MapToGamingPlaceDto(GamingPlaceEntity gp)
@@ -129,13 +119,7 @@ namespace GNS.Services.Implementations
         }
         public List<GamingPlaceDto> MapToGamingPlaceDto(IEnumerable<GamingPlaceEntity> gamingPlaces)
         {
-            var result = new List<GamingPlaceDto>();
-
-            foreach (var gp in gamingPlaces)
-            {
-                result.Add(MapToGamingPlaceDto(gp));
-            }
-            return result;
+            return gamingPlaces.Select(MapToGamingPlaceDto).ToList();
         }
         public OrderDto MapToOrderDto(OrderEntity o)
         {
@@ -153,13 +137,7 @@ namespace GNS.Services.Implementations
         }
         public List<OrderDto> MapToOrderDto(IEnumerable<OrderEntity> orders)
         {
-            var result = new List<OrderDto>();
-
-            foreach (var o in orders)
-            {
-                result.Add(MapToOrderDto(o));
-            }
-            return result;
+            return orders.Select(MapToOrderDto).ToList();
         }
     }
 }

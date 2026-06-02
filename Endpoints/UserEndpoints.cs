@@ -41,10 +41,10 @@ namespace GNS.Endpoints
                 .AllowAnonymous();
 
             user.MapPost("logout", Logout);
+
             var get = user.MapGroup("get");
 
             get.MapGet("all-clubs", GetAllClubs);
-
             get.MapGet("clubs-by-city", GetClubsByCity)
                 .AddEndpointFilter<QueryCityFilter>()
                 .AddEndpointFilter<TerminalValidationFilter>();
@@ -102,7 +102,7 @@ namespace GNS.Endpoints
             return Results.Ok();
         }
         public static async Task<IResult> Refresh(
-            IAuthService authService,
+            ITokenService tokenService,
             ICookieService cookieService,
             HttpContext context
             )
@@ -112,39 +112,14 @@ namespace GNS.Endpoints
                 return Results.BadRequest("Invalid cookies");
             }
 
-            if (!Guid.TryParse(refreshToken, out Guid refreshTokenValue))
-            {
-                return Results.BadRequest("Invalid refreshToken value");
-            }
+            var response = await tokenService.VerifyRefreshTokenAsync(refreshToken);
 
-            var userIdClaim = context.User.Claims.FirstOrDefault(c => c.Type == "Id");
-
-            if (userIdClaim is null)
-            {
-                return Results.Problem("Cannot find id claim");
-            }
-
-            if (!Guid.TryParse(userIdClaim.Value, out Guid userId))
-            {
-                return Results.ValidationProblem(errors: new Dictionary<string, string[]>
-                {
-                    ["claim"] = ["id claim must have Guid format"]
-                });
-
-            }
-
-            var verificationResponse = await authService.VerifyRefreshTokenAsync(refreshToken, userId);
-
-            if (!verificationResponse.IsValid)
+            if (!response.IsValid)
             {
                 return Results.Unauthorized();
             }
-
-            var accessToken = await authService.GetNewAcessTokenAsync(userId);
-
-            cookieService.AppendCookie("accessToken", accessToken);
-
-            cookieService.AppendCookie("refreshToken", verificationResponse.NewRefreshToken.Token.ToString());
+            
+            cookieService.AppendCookie("accessToken", response.NewAccessToken);
 
             return Results.Ok();
         }

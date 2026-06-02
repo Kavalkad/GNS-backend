@@ -14,7 +14,7 @@ namespace GNS.Data.Entities
         public Guid BloomBytesId { get; set; }
         public BloomBytesEntity BloomBytes { get; set; } = null!;
 
-        public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = [];
+        public RefreshTokenEntity? RefreshToken { get; set; } 
         public UserEntity(
             string email,
             string hashedPassword,

@@ -41,7 +41,7 @@ namespace GNS.BackgroundServices
                         return;
                     }
 
-                    await MonthlySetZeroBonuses();
+                    await MonthlySetZeroBonuses(token);
 
                     _ = ScheduleNextExcequtionAsync(token);
                     

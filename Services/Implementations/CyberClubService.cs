@@ -54,7 +54,7 @@ namespace GNS.Services.Implementations
         }
         public async Task<List<CyberClubDto>> GetByCityAsync(string city, CancellationToken token = default)
         {
-            var cyberClubs = await _cyberClubsRepository.GetByExpressionAsync(cc => cc.City == city, token)
+            var cyberClubs = await _cyberClubsRepository.GetByExpressionAsync(cc => cc.City.Contains(city), token)
                 ?? throw new EntityNotFoundException("CyberClub", city);
 
             return _mapper.MapToCyberClubDto(cyberClubs);

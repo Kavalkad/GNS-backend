@@ -11,7 +11,8 @@ namespace GNS.Services.Interfaces
         List<EmployeeDto> MapToEmployeeDto(IEnumerable<EmployeeEntity> employees);
         List<WorkingHoursDto> MapToWorkingHoursDto(IEnumerable<WorkingHoursEntity> workingHours);
         WorkingHoursDto MapToWorkingHoursDto(WorkingHoursEntity wh);
-        List<TimeSlotDto> MapToTimeSlotsDtoList(WorkingHoursDto wh);
+        List<TimeSlotDto> MapToTimeSlotDtoList(WorkingHoursDto wh);
+        List<TimeSlotDto> MapToTimeSlotDtoList(IEnumerable<OrderEntity> orders);
         GameDto MapToGameDto(GameEntity g);
         List<GameDto> MapToGameDto(IEnumerable<GameEntity> games);
        

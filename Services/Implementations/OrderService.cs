@@ -28,7 +28,7 @@ namespace GNS.Services.Implementations
         public async Task<OrderDto> CreateOrderAsync(CreateOrderRequest request, CancellationToken token = default)
         {
             var gamingPlaceId = request.GamingPlaceId;
-            var gamingPlace = await _gamingPlaceService.GetByIdWithDetails(gamingPlaceId, token);
+            var (gamingPlace, cyberClubName) = await _gamingPlaceService.GetWithCyberClubName(gamingPlaceId, token);
             var totalSum = (request.DateTimeEnd.Hour - request.DateTimeStart.Hour) * gamingPlace.PricePerHour;
 
             var userId = _contextAccessor.TryGetHttpUserId();
@@ -38,8 +38,9 @@ namespace GNS.Services.Implementations
                 UserId = userId,
                 DateTimeStart = request.DateTimeStart,
                 DateTimeEnd = request.DateTimeEnd,
-                CyberClubName = gamingPlace.CyberClub.Name,
+                CyberClubName = cyberClubName,
                 GamingPlaceNumber = gamingPlace.Number,
+                GamingPlaceId = gamingPlace.Id,
                 Equipment = gamingPlace.Equipment,
                 TotalSum = totalSum,
                 OrderStatus = OrderStatus.Booked
@@ -58,6 +59,7 @@ namespace GNS.Services.Implementations
             return await _ordersRepository
                 .GetByExpressionAsync(o => o.DateTimeStart.Date == date.Date
                     && o.GamingPlaceId == gamingPlaceId, token);
+                        
         }
         public async Task<List<OrderDto>> GetActiveOrdersAsync(CancellationToken token = default)
         {
