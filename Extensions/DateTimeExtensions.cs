@@ -1,4 +1,5 @@
 using GNS.Enums;
+using GNS.Exceptions;
 
 namespace GNS.Extensions
 {
@@ -6,9 +7,8 @@ namespace GNS.Extensions
     {
         public static CustomDayOfWeek ParseToCustomDayOfWeek(this DateTime date)
         {
-            var dayOfWeek = Enum.GetName(date.DayOfWeek)
-                ?? throw new Exception($"Cannot get day of week of {date.Date} wile convert to custom day of week");
-
+            var dayOfWeek = Enum.GetName(date.DayOfWeek);
+                
             return Enum.Parse<CustomDayOfWeek>(dayOfWeek);
         }
     }

@@ -45,7 +45,7 @@ namespace GNS.Services.Implementations
                 StartHour = wh.StartHour,
                 EndHour = wh.EndHour,
                 DayOfWeek = Enum.GetName(wh.DayOfWeek) ?? "Undefined",
-                IsOpen = wh.IsOpen 
+                IsOpen = wh.IsOpen
             };
         }
         public List<WorkingHoursDto> MapToWorkingHoursDto(IEnumerable<WorkingHoursEntity> workingHours)
@@ -56,17 +56,32 @@ namespace GNS.Services.Implementations
         public List<TimeSlotDto> MapToTimeSlotDtoList(WorkingHoursDto wh)
         {
             var timeSlots = new List<TimeSlotDto>();
-            var max = wh.EndHour;
+            var startTimeSpan = wh.StartHour.ToTimeSpan();
+            var endTimeSpan = wh.EndHour.ToTimeSpan();
 
-            for (TimeOnly start = wh.StartHour,
-                     end = start.AddHours(1);
-                        end < max; start.AddHours(1), end.AddHours(1))
+            if (endTimeSpan <= startTimeSpan)
             {
+                endTimeSpan = endTimeSpan.Add(TimeSpan.FromDays(1));
+            }
+
+            var start = wh.StartHour;
+
+            while (true)
+            {
+                var end = start.AddHours(1);
+
+                if (end.ToTimeSpan() > endTimeSpan)
+                {
+                    break;
+                }
+
                 timeSlots.Add(new TimeSlotDto
                 {
                     Start = start,
                     End = end
                 });
+
+                start = end;
             }
             return timeSlots;
         }
@@ -106,7 +121,7 @@ namespace GNS.Services.Implementations
         {
             return games.Select(MapToGameDto).ToList();
         }
-       
+
         public GamingPlaceDto MapToGamingPlaceDto(GamingPlaceEntity gp)
         {
             return new GamingPlaceDto

@@ -26,11 +26,12 @@ namespace GNS.Services.Implementations
 
         public async Task<List<TimeSlotDto>> GetUnAvailableSlotsAsync(
             Guid gamingPlaceId,
-            DateTime date,
+            DateOnly date,
             CancellationToken token = default
         )
         {
-            var dayOfWeek = date.Date.ParseToCustomDayOfWeek();
+            var dateInDateTimeFormat = date.ToDateTime(new TimeOnly()); 
+            var dayOfWeek = dateInDateTimeFormat.ParseToCustomDayOfWeek();
 
             var gamingPlace = await _gamingPlaceService.GetByIdAsync(gamingPlaceId, token);
 
@@ -48,7 +49,7 @@ namespace GNS.Services.Implementations
             }
 
             var gamingPlaceDateOrders = await _orderService.GetByDateAndGamingPlaceAsync(
-                date: date,
+                date: dateInDateTimeFormat,
                 gamingPlaceId: gamingPlaceId,
                 token: token
             );

@@ -134,7 +134,7 @@ namespace GNS.Endpoints
         }
         public static async Task<IResult> GetUnAwailableTimeSlots(
             Guid gamingPlaceId,
-            DateTime date,
+            DateOnly date,
             ITimeSlotsService service
             )
         {
