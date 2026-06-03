@@ -56,6 +56,7 @@ namespace GNS.Services.Implementations
             Guid gamingPlaceId,
             CancellationToken token = default)
         {
+            
             return await _ordersRepository
                 .GetByExpressionAsync(o => o.DateTimeStart.Date == date.Date
                     && o.GamingPlaceId == gamingPlaceId, token);

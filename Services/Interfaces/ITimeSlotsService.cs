@@ -7,7 +7,7 @@ namespace GNS.Services.Interfaces
     {
         Task<List<TimeSlotDto>> GetUnAvailableSlotsAsync(
             Guid gamingPlaceId,
-            DateTime date,
+            DateOnly date,
             CancellationToken token = default
         );
        
