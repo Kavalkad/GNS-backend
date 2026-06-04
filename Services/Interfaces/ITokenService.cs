@@ -1,7 +1,7 @@
 using GNS.Contracts.Responses;
 using GNS.Data.Entities;
 using GNS.Enums;
-using GNS.Interfaces;
+
 
 
 namespace GNS.Services.Interfaces

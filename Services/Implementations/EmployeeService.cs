@@ -131,7 +131,7 @@ namespace GNS.Services.Implementations
         public async Task<EmployeeDto> GetByNamesAsync(string firstName, string lastName, CancellationToken token = default)
         {
             var employee = await _employeesRepository.FindAsync(
-                e => e.FirstName == firstName && e.LastName == lastName, token)
+                e => e.FirstName.Contains(firstName) && e.LastName.Contains(lastName), token)
                     ?? throw new EntityNotFoundException("Employee", $"firstName: {firstName}, lastName: {lastName}");
 
             return _mapper.MapToEmployeeDto(employee);
@@ -228,7 +228,7 @@ namespace GNS.Services.Implementations
             var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
                 ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
 
-            employee.Bonus = request.Bonus;
+            employee.Bonus += request.Bonus;
 
             _employeesRepository.Update(employee);
             await _unitOfWork.SaveChangesAsync(token);
@@ -240,7 +240,7 @@ namespace GNS.Services.Implementations
             var employee = await _employeesRepository.GetByIdAsync(employeeId, token)
                 ?? throw new EntityNotFoundException("Employee", employeeId.ToString());
 
-            employee.Penalty = request.Penalty;
+            employee.Penalty += request.Penalty;
 
             _employeesRepository.Update(employee);
             await _unitOfWork.SaveChangesAsync(token);

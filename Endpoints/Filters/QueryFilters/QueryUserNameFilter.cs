@@ -1,7 +1,3 @@
-
-using GNS.Extensions;
-using Microsoft.AspNetCore.Mvc;
-
 namespace GNS.Endpoints.Filters
 {
     public class QueryUserNameFilter : IEndpointFilter

@@ -1,4 +1,3 @@
-
 using GNS.Contracts.Requests.Interfaces;
 using GNS.Extensions;
 
@@ -28,7 +27,9 @@ namespace GNS.Endpoints.Filters
             {
                 return Results.BadRequest();
             }
+
             var userName = request.UserName;
+            
             if (userName.IsNotUserName())
             {
                 errors?.Add("UserName", [$"UserName has incorrect format"]);

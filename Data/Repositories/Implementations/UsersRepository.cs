@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using GNS.Enums;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Data.Entities;
 using System.Linq.Expressions;

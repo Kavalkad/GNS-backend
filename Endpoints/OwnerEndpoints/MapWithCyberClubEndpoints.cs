@@ -1,8 +1,6 @@
 using GNS.Contracts.Requests;
-using GNS.Contracts.Requests.Interfaces;
 using GNS.Endpoints.Filters;
 using GNS.Exceptions;
-using GNS.Extensions;
 using GNS.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +14,7 @@ namespace GNS.Endpoints.OwnerEndploints
                 
 
             cyberClubs.MapPost("add", AddCyberClub);
+            
             cyberClubs.MapGet("get-my-clubs", GetOwnersCyberClubs);
 
             var updates = cyberClubs.MapGroup("update")

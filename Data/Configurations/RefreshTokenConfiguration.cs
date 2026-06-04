@@ -13,8 +13,6 @@ namespace GNS.Data.Configurations
             builder
                 .HasOne(rt => rt.User)
                 .WithOne(u => u.RefreshToken);
-
-
         }
     }
 }

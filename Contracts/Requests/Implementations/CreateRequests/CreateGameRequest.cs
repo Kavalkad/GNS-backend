@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using GNS.Enums;
 
 namespace GNS.Contracts.Requests
 {

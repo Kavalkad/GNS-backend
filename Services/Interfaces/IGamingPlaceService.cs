@@ -1,9 +1,7 @@
-using GNS.Contracts;
 using GNS.Contracts.Requests;
 using GNS.Contracts.Requests.Implementations;
 using GNS.Data.Entities;
 using GNS.Dto;
-using GNS.Enums;
 
 namespace GNS.Services.Interfaces
 {

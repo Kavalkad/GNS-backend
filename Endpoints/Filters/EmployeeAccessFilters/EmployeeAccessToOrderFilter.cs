@@ -1,8 +1,6 @@
 using GNS.Contracts.Requests.Interfaces;
-using GNS.Exceptions;
-using GNS.Services;
 using GNS.Services.Interfaces;
-using Microsoft.AspNetCore.Authentication;
+
 
 namespace GNS.Endpoints.Filters
 {

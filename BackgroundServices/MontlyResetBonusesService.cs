@@ -1,6 +1,4 @@
 using Cronos;
-using GNS.Interfaces;
-using GNS.Services;
 using GNS.Services.Interfaces;
 
 namespace GNS.BackgroundServices
@@ -14,7 +12,7 @@ namespace GNS.BackgroundServices
         {
             _scopeFactory = scopeFactory;
 
-            _cronExpression = CronExpression.Parse("0 0 1 * *");
+            _cronExpression = CronExpression.Parse("1 * * * *");
         }
 
         protected override async Task ExecuteAsync(CancellationToken token)
@@ -23,56 +21,53 @@ namespace GNS.BackgroundServices
         }
         private async Task ScheduleNextExcequtionAsync(CancellationToken token)
         {
-           
-            try
+            while (!token.IsCancellationRequested)
             {
                 var now = DateTime.UtcNow;
                 var nextExecution = _cronExpression.GetNextOccurrence(now);
 
-                if (nextExecution.HasValue && !token.IsCancellationRequested)
+                if (nextExecution is null)
                 {
-                    
-                    var delay = nextExecution.Value - now;
+                    break;
+                }
 
+                var delay = nextExecution.Value - now;
+                
+                try
+                {
                     await Task.Delay(delay, token);
 
-                    if (token.IsCancellationRequested)
-                    {
-                        return;
-                    }
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                    // Нужно логгирование
+                    return;
+                }
 
-                    await MonthlySetZeroBonuses(token);
+                try
+                {
+                    await SetZeroBonuses(token);
+                }
+                catch (Exception e)
+                {
+                    // Нужно логгирование
 
-                    _ = ScheduleNextExcequtionAsync(token);
-                    
                 }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine("Ошибка в планировщике " + e.Message);
-                // Перепланируем через 1 минуту при ошибке
-                await Task.Delay(TimeSpan.FromMinutes(1), token);
-                _ = ScheduleNextExcequtionAsync(token);
-            }
-
         }
-        private async Task MonthlySetZeroBonuses(CancellationToken token = default)
-        {
-            try
-            {
-                using var scope = _scopeFactory.CreateScope();
-                var employeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
 
-                await employeeService.SetZeroBonusesAsync(token);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+
+        private async Task SetZeroBonuses(CancellationToken token = default)
+        {
+
+            using var scope = _scopeFactory.CreateScope();
+            var employeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
+
+            await employeeService.SetZeroBonusesAsync(token);
+
         }
         public override async Task StopAsync(CancellationToken token)
         {
-            Console.WriteLine("Остановка CronMonthlyBonusResetService");
             await base.StopAsync(token);
         }
     }

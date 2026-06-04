@@ -10,7 +10,7 @@ namespace GNS.Services.Interfaces
         Task RegisterAsync(RegisterEmployeeRequest request, CancellationToken token = default);
         Task<LoginEmployeeResponse> LoginAsync(LoginEmployeeRequest request, CancellationToken token = default);
 
-        //Task DeleteById(Guid id);
+
         Task<EmployeeEntity> GetByIdAsync(Guid employeeId, CancellationToken token = default);
         Task<EmployeeDto> GetByNamesAsync(string firstName, string lastName, CancellationToken token = default);
         Task<List<EmployeeDto>> GetWithBonusAsync(CancellationToken token = default);

@@ -8,11 +8,13 @@ namespace GNS.Data.Entities
         public string City { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
 
-        public int GamingPlacesCount => GamingPlaces.Count;
+
         public ICollection<WorkingHoursEntity> WorkingHours { get; set; } = [];
         public ICollection<EmployeeEntity> Employees { get; set; } = [];
+
         public Guid OwnerId { get; set; }
         public OwnerEntity Owner { get; set; } = null!;
+        
         public ICollection<GamingPlaceEntity> GamingPlaces { get; set; } = [];
 
     }

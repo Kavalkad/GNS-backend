@@ -10,7 +10,6 @@ namespace GNS.Data.Configurations
         {
             builder.HasKey(cc => cc.Id);
 
-
             builder.Property(cc => cc.Name)
                 .HasMaxLength(25)
                 .IsRequired();
@@ -42,8 +41,7 @@ namespace GNS.Data.Configurations
                 .HasOne(cc => cc.Owner)
                 .WithMany(o => o.CyberClubs)
                 .HasForeignKey(cc => cc.OwnerId);
-                
-                
+                              
         }
     }
 }

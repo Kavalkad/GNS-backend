@@ -10,20 +10,16 @@ namespace GNS.Data.Configurations
         {
             builder.HasKey(o => o.Id);
 
-                
-
             builder
                 .HasOne(o => o.User)
                 .WithMany(u => u.Orders)
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.ClientNoAction);
 
-
             builder
                 .HasOne(o => o.GamingPlace)
                 .WithMany(gp => gp.Orders)
-                .HasForeignKey(o => o.GamingPlaceId);
-              
+                .HasForeignKey(o => o.GamingPlaceId);     
 
         }
     }

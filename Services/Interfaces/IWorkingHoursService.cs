@@ -1,8 +1,6 @@
 using GNS.Dto;
-using GNS.Contracts;
 using GNS.Contracts.Requests;
 using GNS.Data.Entities;
-using GNS.Enums;
 
 namespace GNS.Services.Interfaces
 {
@@ -11,7 +9,7 @@ namespace GNS.Services.Interfaces
         Task AddWorkingHoursAsync(CreateWorkingHoursRequest request, CancellationToken token = default);
         Task<WorkingHoursEntity> GetByIdAsync(Guid workingHoursId, CancellationToken token = default);
         Task<List<WorkingHoursDto>> GetByCyberClubIdAsync(Guid cyberClubId, CancellationToken token = default);
-        //Task<WorkingHoursEntity?> GetByDayAndCCId(Guid cyberClubId, CustomDayOfWeek dayOfWeek);
+
         Task UpdateWorkingHoursStartHourAsync(
             UpdateWorkingHoursStartHourRequest request,
             CancellationToken token = default
@@ -24,7 +22,7 @@ namespace GNS.Services.Interfaces
             UpdateWorkingHoursIsOpenRequest request,
             CancellationToken token = default
             );
-       // Task DeleteByCCId(Guid ccId);
+
         Task DeleteByWorkingHoursIdAsync(Guid whId, CancellationToken token = default);
     }
 }

@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text;
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
@@ -56,7 +55,9 @@ namespace GNS.Services.Implementations
                 EmailBytes = emailBytes,
                 UserNameBytes = userNameBytes
             };
+
             var bloomBytesId = bloomBytesEntity.Id;
+            
             await _bloomBytesRepository.AddAsync(bloomBytesEntity, token);
             await _unitOfWork.SaveChangesAsync(token);
 

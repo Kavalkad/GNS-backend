@@ -18,8 +18,6 @@ namespace GNS.Data.Configurations
                 .HasOne(wh => wh.CyberClub)
                 .WithMany(cc => cc.WorkingHours)
                 .HasForeignKey(wh => wh.CyberClubId);
-                
-
 
         }
     }

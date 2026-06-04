@@ -1,7 +1,5 @@
-using GNS.Contracts;
 using GNS.Contracts.Requests.Interfaces;
-using GNS.Extensions;
-using GNS.Interfaces;
+
 
 namespace GNS.Endpoints.Filters
 {

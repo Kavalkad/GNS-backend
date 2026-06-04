@@ -9,8 +9,7 @@ namespace GNS.Endpoints.OwnerEndploints
     {
         public static IEndpointRouteBuilder MapWithEmployeeEndpoints(this IEndpointRouteBuilder app)
         {
-            var employees = app.MapGroup("employees")
-                ;
+            var employees = app.MapGroup("employees");
 
             employees.MapPost("add", AddEmployee)
                 .AddEndpointFilter<OwnerAccessToCyberClubFilter>()

@@ -1,7 +1,4 @@
-using GNS.Contracts;
 using GNS.Contracts.Requests.Interfaces;
-using GNS.Extensions;
-using GNS.Interfaces;
 
 namespace GNS.Endpoints.Filters
 {
@@ -27,7 +24,9 @@ namespace GNS.Endpoints.Filters
             {
                 Results.BadRequest("failed to read secret word");
             }
+
             var superSecretWord = request.SuperSecretWord;
+            
             if (superSecretWord.Length < 8 || superSecretWord.Length > 25)
             {
                 errors!.Add("supersecret word length", ["supersecret word must contain from 8 to 25 symbols"]);

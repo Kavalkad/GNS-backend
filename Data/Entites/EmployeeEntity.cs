@@ -1,10 +1,9 @@
 using GNS.Enums;
-using GNS.Interfaces;
 
 
 namespace GNS.Data.Entities
 {
-    public class EmployeeEntity : UserEntity, IClaimsGeneratable
+    public class EmployeeEntity : UserEntity
     {
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;

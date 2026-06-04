@@ -8,8 +8,8 @@ namespace GNS.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<EmployeeEntity> builder)
         {
-
             builder.ToTable("Employees");
+
             builder
                 .HasOne(e => e.CyberClub)
                 .WithMany(cc => cc.Employees)

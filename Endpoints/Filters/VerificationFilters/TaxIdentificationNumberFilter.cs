@@ -1,7 +1,5 @@
-using GNS.Contracts;
 using GNS.Contracts.Requests.Interfaces;
-using GNS.Extensions;
-using GNS.Interfaces;
+
 
 namespace GNS.Endpoints.Filters
 {
@@ -27,7 +25,9 @@ namespace GNS.Endpoints.Filters
             {
                 Results.BadRequest("failed to read TaxIdentifiactionNumber from request");
             }
+
             var taxIdentifiactionNumber = request!.TaxIdentificationNumber;
+
             if (taxIdentifiactionNumber.Length != 9)
             {
                 errors!.Add("TaxIdentificationNumber Lenth", ["TaxIdentifiactionNumber must contain only 9 digits"]);
@@ -39,6 +39,7 @@ namespace GNS.Endpoints.Filters
             }
             
             context.HttpContext.Items["ValidationErrors"] = errors;
+            
             return await next(context);
         }
     }

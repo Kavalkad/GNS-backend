@@ -1,13 +1,9 @@
 using GNS.Contracts.Requests;
-using GNS.Data.Repositories.Interfaces;
 using GNS.Endpoints.Filters;
 using GNS.Enums;
-using GNS.Exceptions;
-using GNS.Extensions;
 using GNS.Services;
 using GNS.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace GNS.Endpoints
 {

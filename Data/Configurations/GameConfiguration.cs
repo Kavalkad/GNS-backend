@@ -8,9 +8,7 @@ namespace GNS.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<GameEntity> builder)
         {
-            builder.HasKey(g => g.Id);
-
-           
+            builder.HasKey(g => g.Id); 
                 
         }
     }
