@@ -3,9 +3,7 @@ using GNS.Services.Interfaces;
 using GNS.Contracts.Requests;
 using GNS.Data.Repositories.Interfaces;
 using GNS.Data.Entities;
-using Microsoft.AspNetCore.Http.HttpResults;
 using GNS.Enums;
-using GNS.Extensions;
 using GNS.Exceptions;
 using GNS.Contracts.Requests.Implementations;
 

@@ -1,7 +1,5 @@
-using GNS.Data.Configurations;
 using GNS.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace GNS.Data
 {
@@ -28,9 +26,7 @@ namespace GNS.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-
         }
     }
 }

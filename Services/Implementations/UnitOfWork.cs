@@ -1,5 +1,4 @@
 using GNS.Data;
-using GNS.Data.Entities;
 using GNS.Services.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 

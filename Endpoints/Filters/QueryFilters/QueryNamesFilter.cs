@@ -1,4 +1,3 @@
-
 using GNS.Extensions;
 
 namespace GNS.Endpoints.Filters

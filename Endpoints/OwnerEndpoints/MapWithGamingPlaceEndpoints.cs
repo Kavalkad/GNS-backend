@@ -11,10 +11,11 @@ namespace GNS.Endpoints.OwnerEndploints
         public static IEndpointRouteBuilder MapWithGamingPlaceEndpoints(this IEndpointRouteBuilder owner)
         {
             var gamingPlaces = owner.MapGroup("gaming-places");
+
             gamingPlaces.MapPost("add", AddGamingPlaces)
-                .AddEndpointFilter<OwnerAccessToCyberClubFilter>()
                 .AddEndpointFilter<PricePerHourFilter>()
-                .AddEndpointFilter<TerminalValidationFilter>();
+                .AddEndpointFilter<TerminalValidationFilter>()
+                .AddEndpointFilter<OwnerAccessToCyberClubFilter>();
 
             var update = gamingPlaces.MapGroup("update")
                 .AddEndpointFilter<OwnerAccessToGamingPlaceFilter>();

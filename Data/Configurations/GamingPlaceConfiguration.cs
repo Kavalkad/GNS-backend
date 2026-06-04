@@ -10,7 +10,6 @@ namespace GNS.Data.Configurations
         {
             builder.HasKey(gp => gp.Id);
 
-
             builder
                 .HasOne(gp => gp.CyberClub)
                 .WithMany(cc => cc.GamingPlaces)
@@ -20,9 +19,6 @@ namespace GNS.Data.Configurations
             builder
                 .HasMany(gp => gp.Orders)
                 .WithOne(o => o.GamingPlace);
-
-            
-
 
         }
     }

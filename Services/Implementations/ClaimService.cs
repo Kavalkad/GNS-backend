@@ -1,8 +1,6 @@
 using System.Security.Claims;
 using GNS.Enums;
-using GNS.Interfaces;
 using GNS.Services.Interfaces;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace GNS.Services.Implementations
 {

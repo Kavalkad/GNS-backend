@@ -56,30 +56,23 @@ namespace GNS.Endpoints
         }
         public static async Task<IResult> Login(
             [FromBody] LoginOwnerRequest request,
-            IOwnerService service,
+            IOwnerService ownerService,
+            ICookieService cookieService,
             HttpContext context
             )
         {
-            var response = await service.LoginAsync(request);
+            var response = await ownerService.LoginAsync(request);
 
-            if (context.Request.Cookies.ContainsKey("accessToken"))
-            {
-                context.Response.Cookies.Delete("accessToken");
-            }
-            context.Response.Cookies.Append("accessToken", response.AccessToken);
+            cookieService.AppendCookie("accessToken", response.AccessToken);
 
-            if (context.Request.Cookies.ContainsKey("refreshToken"))
-            {
-                context.Response.Cookies.Delete("refreshToken");
-            }
-            context.Response.Cookies.Append("refreshToken", response.RefreshToken);
-            
+            cookieService.AppendCookie("refreshToken", response.RefreshToken);
+
             return TypedResults.Ok(new
             {
                 response.Email,
                 response.UserName,
                 response.TaxIdentificationNumber,
-                Role = Enum.GetName(response.Role)               
+                Role = Enum.GetName(response.Role)
             });
         }
     }

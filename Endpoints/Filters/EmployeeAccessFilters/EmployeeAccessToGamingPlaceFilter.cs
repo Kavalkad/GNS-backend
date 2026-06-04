@@ -1,15 +1,12 @@
 using GNS.Contracts.Requests.Interfaces;
-using GNS.Exceptions;
-using GNS.Services;
 using GNS.Services.Interfaces;
-using Microsoft.AspNetCore.Authentication;
+
 
 namespace GNS.Endpoints.Filters
 {
     public class EmployeeAccessToGamingPlaceFilter(IAuthService authService) : IEndpointFilter
     {
         private readonly IAuthService _authService = authService;
-        
 
         public async ValueTask<object?> InvokeAsync(
             EndpointFilterInvocationContext context,

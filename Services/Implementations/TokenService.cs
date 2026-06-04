@@ -1,4 +1,3 @@
-using GNS.Interfaces;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -139,17 +138,24 @@ namespace GNS.Services.Implementations
         {
             var refreshToken = await _refreshTokensRepository.GetByUserIdAsync(userId, token);
 
-            refreshToken ??= new RefreshTokenEntity
+            if (refreshToken is null)
             {
-                Token = Guid.NewGuid(),
-                ExpiresAt = DateTime.Now.AddDays(_refreshTokenOptions.RefreshTokenValidityDays),
-                UserId = userId
-            };
+                refreshToken = new RefreshTokenEntity
+                {
+                    Token = Guid.NewGuid(),
+                    ExpiresAt = DateTime.Now.AddDays(_refreshTokenOptions.RefreshTokenValidityDays),
+                    UserId = userId
+                };
+                await _refreshTokensRepository.AddAsync(refreshToken, token);
+            }
+            else
+            {
+                refreshToken.Token = Guid.NewGuid();
+                refreshToken.ExpiresAt = DateTime.Now.AddDays(_refreshTokenOptions.RefreshTokenValidityDays);
 
-            refreshToken.Token = Guid.NewGuid();
-            refreshToken.ExpiresAt = DateTime.Now.AddDays(_refreshTokenOptions.RefreshTokenValidityDays);
+                _refreshTokensRepository.Update(refreshToken);
+            }
 
-            _refreshTokensRepository.Update(refreshToken);
             await _unitOfWork.SaveChangesAsync(token);
 
             return refreshToken;

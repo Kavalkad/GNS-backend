@@ -1,5 +1,3 @@
-using GNS.Contracts.Responses;
-
 namespace GNS.Services.Interfaces
 {
     public interface IAuthService

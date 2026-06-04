@@ -1,12 +1,6 @@
-using GNS.Contracts;
-using GNS.Contracts.Requests;
-using GNS.Data.Entities;
-using GNS.Data.Repositories.Interfaces;
 using GNS.Dto;
-using GNS.Enums;
 using GNS.Exceptions;
 using GNS.Extensions;
-using GNS.Interfaces;
 using GNS.Services.Interfaces;
 
 namespace GNS.Services.Implementations

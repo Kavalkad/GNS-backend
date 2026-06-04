@@ -1,8 +1,6 @@
 using System.Linq.Expressions;
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
-using GNS.Enums;
-using GNS.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace GNS.Data.Repositories.Implementations

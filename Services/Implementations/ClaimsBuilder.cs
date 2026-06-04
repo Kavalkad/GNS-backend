@@ -1,6 +1,4 @@
 using System.Security.Claims;
-using GNS.Interfaces;
-using GNS.Enums;
 using GNS.Services.Interfaces;
 
 namespace GNS.Services.Implementations

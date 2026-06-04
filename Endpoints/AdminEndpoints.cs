@@ -29,9 +29,9 @@ namespace GNS.Endpoints
                 .AddEndpointFilter<TerminalValidationFilter>(); ;
 
             orders.MapPost("update-status", UpdateOrderStatus)
-                .AddEndpointFilter<EmployeeAccessToOrderFilter>()
                 .AddEndpointFilter<OrderStatusFilter>()
-                .AddEndpointFilter<TerminalValidationFilter>();
+                .AddEndpointFilter<TerminalValidationFilter>()
+                .AddEndpointFilter<EmployeeAccessToOrderFilter>();
 
 
             return app;

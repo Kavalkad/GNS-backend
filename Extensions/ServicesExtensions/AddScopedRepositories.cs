@@ -1,6 +1,5 @@
 using GNS.Data.Repositories.Implementations;
 using GNS.Data.Repositories.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GNS.Extensions
 {

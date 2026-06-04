@@ -1,28 +1,17 @@
 using System.Linq.Expressions;
-using System.Security.Claims;
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
-using GNS.Dto;
-using GNS.Enums;
-using GNS.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace GNS.Data.Repositories.Implementations
 {
-    public class EmployeesRepository : BaseRepository<EmployeeEntity>, IEmployeesRepository
+    public class EmployeesRepository(AppDbContext dbContext) : BaseRepository<EmployeeEntity>(dbContext), IEmployeesRepository
     {
-        public EmployeesRepository(AppDbContext dbContext) : base(dbContext) 
-        {
-            
-        }
-
         public async Task<List<EmployeeEntity>> GetWithDetailsByExpressionAsync(
             Expression<Func<EmployeeEntity, bool>> predicate,
             CancellationToken token = default
             )
         {
-            // Костыль, надо подкмать, поменять
             return await _dbSet
                 .AsNoTracking()
                 .Include(e => e.CyberClub)
@@ -32,11 +21,12 @@ namespace GNS.Data.Repositories.Implementations
 
         public async Task SetZeroBonusesAsync(CancellationToken token = default)
         {
-            await _dbSet.ExecuteUpdateAsync(ub =>
-            {
-                ub.SetProperty(e => e.Bonus, 0);
-            },
-            token);
+            await _dbSet
+                .Where(e => e.Bonus != 0)
+                .ExecuteUpdateAsync(ub =>
+                {
+                    ub.SetProperty(e => e.Bonus, 0);
+                }, token);
         }
 
         public async Task SetZeroPenaltiesAsync(CancellationToken token = default)

@@ -26,7 +26,7 @@ namespace GNS.Services.Implementations
             var cyberClubEntity = new CyberClubEntity
             {
                 Name = request.Name,
-                City = request.City,
+                City = request.City.Trim(),
                 Address = request.Address,
                 OwnerId = ownerId
             };
@@ -74,7 +74,7 @@ namespace GNS.Services.Implementations
             var cyberClub = await _cyberClubsRepository.GetByIdAsync(cyberClubId, token)
                 ?? throw new EntityNotFoundException("CyberClub", request.CyberClubId.ToString());
 
-            cyberClub.Name = request.Name;
+            cyberClub.Name = request.Name.Trim();
 
             _cyberClubsRepository.Update(cyberClub);
             await _unitOfWork.SaveChangesAsync(token);

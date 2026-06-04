@@ -3,7 +3,6 @@ using GNS.Contracts.Requests;
 using GNS.Contracts.Responses;
 using GNS.Data.Entities;
 using GNS.Data.Repositories.Interfaces;
-using GNS.Enums;
 using GNS.Exceptions;
 using GNS.Extensions;
 using GNS.Services.Interfaces;
@@ -78,9 +77,7 @@ namespace GNS.Services.Implementations
 
         public async Task<LoginUserResponse> LoginAsync(LoginUserRequest request, CancellationToken token = default)
         {
-
             var user = await _usersRepository.FindAsync(u => u.Email == request.Email, token);
-
 
             var result = user is not null && _hasher.Verify(request.Password, user.HashedPassword);
 

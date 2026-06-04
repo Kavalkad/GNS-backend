@@ -1,4 +1,3 @@
-using GNS.Contracts.Requests;
 using GNS.Dto;
 
 namespace GNS.Services.Interfaces

@@ -1,6 +1,4 @@
 
-using GNS.Data.Entities;
-
 namespace GNS.Dto
 {
     public record class OrderDto

@@ -9,6 +9,7 @@ namespace GNS.Endpoints.OwnerEndploints
         public static IEndpointRouteBuilder MapWithGamesEndpoints(this IEndpointRouteBuilder owner)
         {
             var games = owner.MapGroup("games");
+
             games.MapPost("add", AddGame);
 
             var update = games.MapGroup("update");
@@ -18,7 +19,6 @@ namespace GNS.Endpoints.OwnerEndploints
             update.MapPut("on-xbox", UpdateGameOnXbox);
 
             games.MapDelete("delete", DeleteGame);
-
 
             return owner;
         }

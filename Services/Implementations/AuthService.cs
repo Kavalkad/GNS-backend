@@ -1,9 +1,5 @@
-using System.Security.Claims;
-using GNS.Contracts.Responses;
-using GNS.Data.Repositories.Interfaces;
 using GNS.Exceptions;
 using GNS.Services.Interfaces;
-using Microsoft.IdentityModel.Tokens;
 
 namespace GNS.Services.Implementations
 {
@@ -21,8 +17,6 @@ namespace GNS.Services.Implementations
         private readonly IGamingPlaceService _gamingPlaceService = gamingPlaceService;
         private readonly IWorkingHoursService _workingHoursService = workingHoursService;
         private readonly IOrderService _orderService = orderService;
-
-        
 
         public async Task<bool> VerifyOwnerAccessToEmployeeAsync(
             Guid ownerId,
@@ -86,12 +80,10 @@ namespace GNS.Services.Implementations
             CancellationToken token = default
             )
         {
-            var employee = await _employeeSerice.GetByIdAsync(employeeId, token)
-                ?? throw new EntityNotFoundException("employee", employeeId.ToString());
+            var employee = await _employeeSerice.GetByIdAsync(employeeId, token);
 
-            var gamingPlace = await _gamingPlaceService.GetByIdAsync(gamingPlaceId, token)
-                ?? throw new EntityNotFoundException("gaming place", gamingPlaceId.ToString());
-
+            var gamingPlace = await _gamingPlaceService.GetByIdAsync(gamingPlaceId, token);
+               
             return employee.CyberClubId == gamingPlace.CyberClubId;
         }
 

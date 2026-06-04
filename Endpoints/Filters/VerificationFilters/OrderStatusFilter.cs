@@ -1,10 +1,5 @@
-
-using System.Runtime.InteropServices;
-using GNS.Contracts;
 using GNS.Contracts.Requests;
 using GNS.Enums;
-using GNS.Extensions;
-using Microsoft.AspNetCore.Mvc;
 
 namespace GNS.Endpoints.Filters
 {

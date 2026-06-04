@@ -1,4 +1,3 @@
-
 using GNS.Contracts.Requests;
 using GNS.Endpoints.Filters;
 using GNS.Services.Interfaces;
@@ -25,45 +24,23 @@ namespace GNS.Endpoints
             return app;
         }
         public static async Task<IResult> Login(
-                [FromBody] LoginEmployeeRequest request,
-                IEmployeeService employeeService,
-                HttpContext context
-            )
+            [FromBody] LoginEmployeeRequest request,
+            IEmployeeService employeeService,
+            ICookieService cookieService,
+            HttpContext context
+        )
         {
-            if (context.Items.TryGetValue("ModelState", out object? modelStateObj)
-                && modelStateObj is ModelStateDictionary modelState)
-            {
-                if (!modelState.IsValid)
-                {
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    context.Response.ContentType = "application/json";
-
-                    await context.Response.WriteAsJsonAsync(new ValidationProblemDetails(modelState)
-                    {
-                        Title = "One or more validation errors occurred.",
-                        Status = StatusCodes.Status400BadRequest,
-                        Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-                    });
-
-
-                }
-
-            }
             var response = await employeeService.LoginAsync(request);
 
-            if (context.Request.Cookies.ContainsKey("accessToken"))
-            {
-                context.Response.Cookies.Delete("accessToken");
-            }
-            context.Response.Cookies.Append("accessToken", response.AccessToken);
+            cookieService.AppendCookie("accessToken", response.AccessToken);
 
-            if (context.Request.Cookies.ContainsKey("refreshToken"))
-            {
-                context.Response.Cookies.Delete("refreshToken");
-            }
-            context.Response.Cookies.Append("refreshToken", response.RefreshToken);
+            cookieService.AppendCookie("refreshToken", response.RefreshToken);
 
-            return Results.Ok();
+            return Results.Ok(new
+            {
+                response.FirstName,
+                response.LastName
+            });
         }
     }
 }

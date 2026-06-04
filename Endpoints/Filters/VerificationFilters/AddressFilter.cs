@@ -1,7 +1,6 @@
-
 using GNS.Contracts.Requests.Interfaces;
 using GNS.Extensions;
-using Microsoft.AspNetCore.Mvc;
+
 
 namespace GNS.Endpoints.Filters
 {

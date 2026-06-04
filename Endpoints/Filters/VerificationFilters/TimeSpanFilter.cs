@@ -1,8 +1,5 @@
-using GNS.Contracts;
-using GNS.Contracts.Requests;
 using GNS.Contracts.Requests.Interfaces;
-using GNS.Extensions;
-using GNS.Interfaces;
+
 
 namespace GNS.Endpoints.Filters
 {
@@ -32,10 +29,12 @@ namespace GNS.Endpoints.Filters
             var start = request.DateTimeStart;
             var end = request.DateTimeEnd;
             var now = DateTime.Now;
+
             if (end < now || start < now)
             {
                 errors.Add("past time", ["You can't choose past time"]);
             }
+
             if (end - start != TimeSpan.FromHours(1))
             {
                 errors.Add("invalid timespan", ["You can order only 1 hour"]);
@@ -45,10 +44,12 @@ namespace GNS.Endpoints.Filters
             {
                 errors.Add("datetimeend", ["datetimeend must match with the hour begining"]);
             }
+            
             if (start.Minute != 0)
             {
                 errors.Add("datetimestart", ["datetimestart must match with the hour begining"]);
             }
+
             context.HttpContext.Items["ValidationErrors"] = errors;
 
             return await next(context);

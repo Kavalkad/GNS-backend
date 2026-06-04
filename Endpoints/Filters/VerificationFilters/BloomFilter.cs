@@ -22,6 +22,7 @@ namespace GNS.Endpoints.Filters
             var request = context.Arguments
                 .OfType<RegisterUserRequest>()
                 .FirstOrDefault();
+                
             if (request is null)
             {
                 return Results.BadRequest("failed to read request body");

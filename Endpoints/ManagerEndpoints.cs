@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http.HttpResults;
 using GNS.Endpoints.Filters;
 using GNS.Services;
 using GNS.Services.Interfaces;
@@ -16,7 +15,6 @@ namespace GNS.Endpoints
                 {
                     policy.RequireClaim(CustomClaims.ManagerClaim.Type, CustomClaims.ManagerClaim.Value);
                 });
-
 
 
             manager.MapGet("get-cyberclub-employees", GetCyberClubEmployees)

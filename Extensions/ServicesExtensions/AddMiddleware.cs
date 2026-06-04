@@ -1,7 +1,4 @@
-using GNS.Endpoints.Filters;
 using GNS.Middleware;
-using GNS.Services.Implementations;
-using GNS.Services.Interfaces;
 
 namespace GNS.Extensions
 {

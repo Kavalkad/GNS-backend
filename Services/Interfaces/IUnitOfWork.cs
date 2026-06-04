@@ -1,5 +1,3 @@
-using GNS.Data.Entities;
-
 namespace GNS.Services.Interfaces
 {
     public interface IUnitOfWork

@@ -1,14 +1,11 @@
-using System.ComponentModel.DataAnnotations;
-using GNS.Data.Entities;
-
 namespace GNS.Dto
 {
     public class WorkingHoursDto
     {
-        [Required] public Guid Id { get; set; }
-        [Required] public string DayOfWeek { get; set; } = string.Empty;
-        [Required] public TimeOnly StartHour { get; set; }
-        [Required] public TimeOnly EndHour { get; set; } 
-        [Required] public bool IsOpen { get; set; } 
+        public Guid Id { get; set; }
+        public string DayOfWeek { get; set; } = string.Empty;
+        public TimeOnly StartHour { get; set; }
+        public TimeOnly EndHour { get; set; }
+        public bool IsOpen { get; set; }
     }
 }

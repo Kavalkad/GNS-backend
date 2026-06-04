@@ -1,8 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using GNS.Exceptions;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 
 namespace GNS.Middleware
 {
@@ -76,6 +74,10 @@ namespace GNS.Middleware
                     message = e.Message
                 };
                 await context.Response.WriteAsJsonAsync(response);
+            }
+            catch (AccessViolationException)
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
             /*
             catch (Exception e)

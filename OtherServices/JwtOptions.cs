@@ -8,7 +8,6 @@ namespace GNS.Services
         public bool ValidateLifetime { get; set; }
         public string SecretKey { get; set; } = string.Empty;
         public int AccessTokenValidityMins { get; set; }
-        public int RefreshTokenValidityDays { get; set; }
 
     }
 }

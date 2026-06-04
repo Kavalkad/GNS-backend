@@ -13,7 +13,7 @@ namespace GNS.Data.Configurations
             builder.Property(u => u.UserName)
                 .IsRequired()
                 .HasMaxLength(15);
-                
+
 
             builder
                 .HasMany(u => u.Orders)
@@ -22,7 +22,6 @@ namespace GNS.Data.Configurations
             builder
                 .HasOne(u => u.RefreshToken)
                 .WithOne(rt => rt.User);
-
 
             builder
                 .HasOne(u => u.BloomBytes)

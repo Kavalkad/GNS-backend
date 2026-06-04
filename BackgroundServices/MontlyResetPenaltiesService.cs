@@ -1,6 +1,4 @@
 using Cronos;
-using GNS.Interfaces;
-using GNS.Services;
 using GNS.Services.Interfaces;
 
 namespace GNS.BackgroundServices
@@ -23,37 +21,50 @@ namespace GNS.BackgroundServices
         }
         private async Task ScheduleNextExcequtionAsync(CancellationToken token)
         {
-            try
+            while (!token.IsCancellationRequested)
             {
                 var now = DateTime.UtcNow;
                 var nextExecution = _cronExpression.GetNextOccurrence(now);
 
-                if (nextExecution.HasValue && !token.IsCancellationRequested)
+                if (nextExecution is null)
                 {
-                    var delay = nextExecution.Value - now;
-
-                    await Task.Delay(delay, token);
-                    
-                    if (token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    await MonthlySetZeroPenalties();
-
-                    _ = ScheduleNextExcequtionAsync(token);
+                    return;
                 }
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var delay = nextExecution.Value - now;
+
+
+                try
+                {
+                    await Task.Delay(delay, token);
+
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                    // нужно логгирование
+                }
+                try
+                {
+                    await SetZeroPenalties(token);
+
+                }
+                catch(Exception e)
+                {
+                    //Нужно логгирование
+                }
+
+                await ScheduleNextExcequtionAsync(token);
+
+
             }
-            catch (Exception e)
-            {
-                Console.WriteLine("Ошибка в планировщике " + e.Message);
-                // Перепланируем через 1 минуту при ошибке
-                await Task.Delay(TimeSpan.FromMinutes(1), token);
-                _ = ScheduleNextExcequtionAsync(token);
-            }
+
 
         }
-        private async Task MonthlySetZeroPenalties(CancellationToken token = default)
+        private async Task SetZeroPenalties(CancellationToken token = default)
         {
             try
             {
@@ -62,14 +73,13 @@ namespace GNS.BackgroundServices
 
                 await employeeService.SetZeroPenaltiesAsync(token);
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine(e.Message);
+
             }
         }
         public override async Task StopAsync(CancellationToken token)
         {
-            Console.WriteLine("Остановка CronMonthlyPenaltyResetService");
             await base.StopAsync(token);
         }
     }

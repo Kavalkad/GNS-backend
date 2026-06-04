@@ -1,6 +1,3 @@
-
-
-
 using GNS.Contracts.Requests.Interfaces;
 
 namespace GNS.Endpoints.Filters

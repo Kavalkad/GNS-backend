@@ -6,16 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GNS.Data.Repositories.Implementations
 {
-    public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
+    public class BaseRepository<TEntity>(AppDbContext dbcontext) : IRepository<TEntity> where TEntity : BaseEntity
     {
-        private readonly AppDbContext _dbcontext;
-        protected readonly DbSet<TEntity> _dbSet;
-
-        public BaseRepository(AppDbContext dbcontext)
-        {
-            _dbcontext = dbcontext;
-            _dbSet = _dbcontext.Set<TEntity>();
-        }
+        protected readonly DbSet<TEntity> _dbSet = dbcontext.Set<TEntity>();
 
         public async Task AddAsync(TEntity entity, CancellationToken token = default)
         {
