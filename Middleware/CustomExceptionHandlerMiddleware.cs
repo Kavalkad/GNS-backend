@@ -16,13 +16,13 @@ namespace GNS.Middleware
             }
             catch (EntityNotFoundException e)
             {
-                // context.Response.StatusCode = StatusCodes.Status204NoContent;
                 context.Response.ContentType = "application/json";
 
                 var response = new
                 {
                     error = "No content",
-                    message = e.Message
+                    message = e.Message,
+                    statusCode = StatusCodes.Status204NoContent
                 };
                 await context.Response.WriteAsJsonAsync(response);
 
@@ -77,10 +77,10 @@ namespace GNS.Middleware
             }
             catch (AccessViolationException)
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
             }
-            /*
-            catch (Exception e)
+            
+            catch (Exception)
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/json";
@@ -88,11 +88,11 @@ namespace GNS.Middleware
                 var response = new
                 {
                     error = "Internal error",
-                    message = "Oops, something goes wrong. " + e.Message
+                    message = "Oops, something goes wrong. "
                 };
                 await context.Response.WriteAsJsonAsync(response);
             }
-            */
+            
         }
     }
 }
