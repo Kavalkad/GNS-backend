@@ -8,7 +8,6 @@ namespace GNS.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<OwnerEntity> builder)
         {
-            builder.HasKey(o => o.Id);
 
             builder
                 .HasMany(o => o.CyberClubs)
